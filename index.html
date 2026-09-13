@@ -1,161 +1,828 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kullka - Supply Chain Manager</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SDK Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
-  <!-- NAVBAR COM AS 4 CATEGORIAS FIXAS -->
-  <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        
-        <!-- LOGO -->
-        <div class="flex items-center gap-3 cursor-pointer" onclick="navegarPara('dashboard')">
-          <div class="bg-emerald-500 p-2 rounded-lg text-slate-900 font-black text-xl">K</div>
-          <span class="font-bold text-lg tracking-wide text-white">Kullka <span class="text-emerald-400 text-xs font-normal">Gestor</span></span>
+  <!-- Header / Navegação -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+    <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+
+      <!-- Logotipo Kullka -->
+      <a href="index.html" class="flex items-center space-x-3 group">
+        <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18" opacity="0.9" />
+            <path d="M5 21V10l7-5 7 5v11" />
+            <path d="M9 14h6" />
+            <path d="M9 18h6" />
+            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
+          </svg>
         </div>
-
-        <!-- MENU PRINCIPAL COM 4 CATEGORIAS FIXAS -->
-        <nav class="hidden md:flex items-center space-x-1">
-          
-          <!-- 1. Manutenção -->
-          <div class="relative group">
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 rounded-md transition-colors">
-              <i class="fa-solid fa-wrench text-emerald-400"></i>
-              <span>Manutenção</span>
-              <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
-            </button>
-            <div id="dropdown-manutencao" class="hidden group-hover:block absolute left-0 mt-0 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-xl py-2 z-50">
-              <!-- Submenus inseridos dinamicamente pelo JS -->
-            </div>
-          </div>
-
-          <!-- 2. Gestão Operacional -->
-          <div class="relative group">
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 rounded-md transition-colors">
-              <i class="fa-solid fa-boxes-packing text-emerald-400"></i>
-              <span>Gestão Operacional</span>
-              <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
-            </button>
-            <div id="dropdown-gestao" class="hidden group-hover:block absolute left-0 mt-0 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-xl py-2 z-50">
-              <!-- Submenus inseridos dinamicamente pelo JS -->
-            </div>
-          </div>
-
-          <!-- 3. Finanças -->
-          <div class="relative group">
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 rounded-md transition-colors">
-              <i class="fa-solid fa-wallet text-emerald-400"></i>
-              <span>Finanças</span>
-              <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
-            </button>
-            <div id="dropdown-financas" class="hidden group-hover:block absolute left-0 mt-0 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-xl py-2 z-50">
-              <!-- Submenus inseridos dinamicamente pelo JS -->
-            </div>
-          </div>
-
-          <!-- 4. Relatórios -->
-          <div class="relative group">
-            <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 rounded-md transition-colors">
-              <i class="fa-solid fa-chart-line text-emerald-400"></i>
-              <span>Relatórios</span>
-              <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
-            </button>
-            <div id="dropdown-relatorios" class="hidden group-hover:block absolute left-0 mt-0 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-xl py-2 z-50">
-              <!-- Submenus inseridos dinamicamente pelo JS -->
-            </div>
-          </div>
-
-        </nav>
-
-        <!-- AÇÕES / CONFIGURAÇÕES DE PÁGINAS -->
-        <div class="flex items-center gap-2">
-          <button onclick="navegarPara('gestao-paginas')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors">
-            <i class="fa-solid fa-gear text-emerald-400"></i>
-            <span>Gestão de Páginas</span>
-          </button>
+        <div>
+          <span class="text-xl font-extrabold tracking-wide text-white block leading-tight">KULLKA</span>
+          <span class="text-xs text-emerald-400 font-semibold tracking-wider uppercase block">Supply Chain Manager</span>
         </div>
+      </a>
 
-      </div>
+      <!-- Menu Principal Dynamic -->
+      <nav id="mainNav" class="hidden md:flex items-center space-x-1 lg:space-x-4 mt-4 md:mt-0 relative"></nav>
+
     </div>
   </header>
 
-  <!-- ÁREA DE CONTEÚDO DINÂMICO DA APLICAÇÃO -->
-  <main id="app-container" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-    <!-- As visões das páginas carregam aqui sem recarregar a tela -->
-  </main>
+  <!-- Zona de Trabalho Vazia (Inicialmente sem conteúdo) -->
+  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow"></main>
 
+  <!-- MODAL 1: Cadastro/Edição Individual de Endereço -->
+  <div id="modalLayout" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-map-pin text-emerald-400"></i> Personalizar Endereço Logístico
+        </h3>
+        <button onclick="fecharModalLayout()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <form id="formLayout" onsubmit="salvarEndereco(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Zona Principal *</label>
+            <select id="endZona" required onchange="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+              <option value="DOCA">Doca</option>
+              <option value="DEP">Depósito</option>
+              <option value="LOJA">Loja / Salão</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Subzona / Setor</label>
+            <input type="text" id="endSubzona" placeholder="Ex: Frios / Paletes" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Corredor</label>
+            <input type="text" id="endCorredor" placeholder="Ex: 01" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Coluna</label>
+            <input type="text" id="endColuna" placeholder="Ex: A" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Nível / Altura</label>
+            <input type="text" id="endNivel" placeholder="Ex: 1" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <span class="block text-xs font-semibold text-gray-500 uppercase">Código Formatado Preview:</span>
+          <span id="previewCodigo" class="text-base font-extrabold text-emerald-700 tracking-wider">DOCA</span>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="fecharModalLayout()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm font-medium hover:bg-gray-300">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded text-sm font-medium hover:bg-emerald-700">Salvar Endereço</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Gerador em Lote -->
+  <div id="modalLote" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-cubes-stacked text-emerald-400"></i> Gerador Automático de Racks
+        </h3>
+        <button onclick="fecharModalLote()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <form onsubmit="gerarLoteEnderecos(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Zona Target</label>
+          <select id="loteZona" class="w-full border border-gray-300 p-2 rounded text-sm">
+            <option value="DEP">Depósito</option>
+            <option value="LOJA">Loja</option>
+            <option value="DOCA">Doca</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Nº Corredores</label>
+            <input type="number" id="loteCorredores" min="1" max="10" value="2" class="w-full border border-gray-300 p-2 rounded text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Colunas/Prat.</label>
+            <input type="number" id="loteColunas" min="1" max="10" value="3" class="w-full border border-gray-300 p-2 rounded text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Níveis/Alturas</label>
+            <input type="number" id="loteNiveis" min="1" max="8" value="3" class="w-full border border-gray-300 p-2 rounded text-sm">
+            <input type="number" id="loteNiveis" min="1" max="5" value="3" class="w-full border border-gray-300 p-2 rounded text-sm">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded font-medium text-sm transition">
+          Gerar Matriz de Endereçamentos
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Gerenciador de Menu -->
+  <div id="modalMenu" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-sliders text-emerald-400"></i> Gerenciador de Opções do Menu</h3>
+        <button onclick="fecharModalMenu()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+          <h4 class="font-bold text-sm text-slate-700">Adicionar Novo Link</h4>
+          <div>
+            <select id="categoriaSelect" class="w-full border border-gray-300 p-2 rounded text-sm">
+              <option value="manutencao">Manutenção</option>
+              <option value="gestao">Gestão Operacional</option>
+              <option value="financas">Finanças</option>
+              <option value="relatorios">Relatórios</option>
+            </select>
+          </div>
+          <div><input type="text" id="novoNomeItem" placeholder="Nome da opção" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
+          <div><input type="text" id="novoLinkItem" placeholder="URL ex: pagina.html" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
+          <button onclick="adicionarOpcaoMenu()" class="w-full bg-emerald-600 text-white font-medium py-2 rounded text-sm">Adicionar</button>
+        </div>
+        <div id="listaMenuConfig" class="max-h-48 overflow-y-auto divide-y border rounded-lg p-2 text-sm bg-white"></div>
+      </div>
+      <div class="bg-gray-50 px-6 py-3 flex justify-between">
+        <button onclick="restaurarMenuPadrao()" class="text-xs text-red-600 hover:underline">Restaurar Padrão</button>
+        <button onclick="fecharModalMenu()" class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-medium">Concluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Gestão de Páginas (Criar/Editar Página) -->
+  <div id="modalPagina" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i class="fa-solid fa-file-code text-emerald-400"></i> <span id="tituloModalPagina">Nova Página</span>
+        </h3>
+        <button onclick="fecharModalPagina()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <form id="formPagina" onsubmit="salvarPagina(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Título da Página *</label>
+            <input type="text" id="pagTitulo" required placeholder="Ex: Relatório Mensal" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Slug / URL (único) *</label>
+            <input type="text" id="pagSlug" required placeholder="Ex: relatorio-mensal" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Categoria de Menu</label>
+            <select id="pagCategoria" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+              <option value="manutencao">Manutenção</option>
+              <option value="gestao">Gestão Operacional</option>
+              <option value="financas">Finanças</option>
+              <option value="relatorios">Relatórios</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Ícone (FontAwesome)</label>
+            <input type="text" id="pagIcone" placeholder="Ex: fa-file-alt" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Conteúdo HTML / Componente</label>
+          <textarea id="pagConteudo" rows="6" placeholder="<h1>Título</h1><p>Conteúdo da página...</p>" class="w-full border border-gray-300 p-2 rounded text-sm font-mono focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="fecharModalPagina()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm font-medium hover:bg-gray-300">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded text-sm font-medium hover:bg-emerald-700">Salvar Página</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <footer class="bg-slate-900 text-gray-400 text-sm py-6 mt-12 border-t border-slate-800">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2026 Kullka - Supply Chain Manager. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts da Aplicação -->
   <script>
-    // Inicialização do Supabase (Coloque suas chaves se necessário)
-    const SUPABASE_URL = 'SUA_SUPABASE_URL';
-    const SUPABASE_KEY = 'SUA_SUPABASE_KEY';
+    // Configuração do Supabase
+    const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Mapeamento das páginas fixas por categoria no banco/estado da aplicação
-    async function renderizarMenuCategorizado() {
-      const dropdowns = {
-        'Manutenção': document.getElementById('dropdown-manutencao'),
-        'Gestão Operacional': document.getElementById('dropdown-gestao'),
-        'Finanças': document.getElementById('dropdown-financas'),
-        'Relatórios': document.getElementById('dropdown-relatorios')
-      };
+    // Estrutura de Páginas Cadastradas
+    let paginasSistema = JSON.parse(localStorage.getItem('kullka_paginas')) || [
+      { id: 1, titulo: 'Visão Geral do Layout', slug: 'layout-geral', categoria: 'manutencao', icone: 'fa-map-location-dot', conteudo: '<h2>Visão Geral do Layout</h2><p>Esta página gerencia a infraestrutura física do galpão.</p>' }
+    ];
 
-      // Limpa dropdowns
-      Object.values(dropdowns).forEach(el => { if(el) el.innerHTML = ''; });
+    // Estrutura do Menu
+    const menuPadrao = [
+      {
+        id: 'manutencao',
+        titulo: 'Manutenção',
+        icone: 'fa-wrench',
+        itens: [
+          { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
+          { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
+          { nome: 'Editar Layout', url: '#', icone: 'fa-pen-to-square', acao: 'carregarTelaLayout' },
+          { nome: 'Gestão de Páginas', url: '#', icone: 'fa-file-code', acao: 'carregarTelaGestaoPaginas' },
+          { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
+        ]
+      },
+      {
+        id: 'gestao',
+        titulo: 'Gestão Operacional',
+        icone: 'fa-boxes-packing',
+        itens: [
+          { nome: 'Movimentações', url: '#', icone: 'fa-arrows-rotate' }
+        ]
+      },
+      { id: 'financas', titulo: 'Finanças', icone: 'fa-chart-line', itens: [] },
+      { id: 'relatorios', titulo: 'Relatórios', icone: 'fa-file-contract', itens: [] }
+    ];
 
-      // Busca paginas cadastradas no Supabase
-      const { data: paginas, error } = await supabaseClient
-        .from('paginas')
-        .select('*')
-        .eq('ativo', true)
-        .order('titulo', { ascending: true });
+    let estruturaMenu = JSON.parse(localStorage.getItem('kullka_menu')) || menuPadrao;
 
-      if (error || !paginas) {
-        console.warn('Usando estrutura local por falta de conexão com Supabase.');
+    function renderizarMenu() {
+      const navContainer = document.getElementById('mainNav');
+      navContainer.innerHTML = '';
+
+      estruturaMenu.forEach(cat => {
+        const temSubmenu = cat.itens.length > 0;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative menu-item';
+
+        if (temSubmenu) {
+          wrapper.innerHTML = `
+            <button onclick="toggleDropdown(event, '${cat.id}')" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition focus:outline-none">
+              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
+              <span>${cat.titulo}</span>
+              <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
+            </button>
+            <div id="dropdown-${cat.id}" class="dropdown-menu absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 hidden border border-gray-100 z-50">
+              ${cat.itens.map(item => {
+                const clickHandler = item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : `onclick="fecharTodosDropdowns();"`;
+                return `
+                  <a href="${item.url}" ${clickHandler} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
+                    <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else {
+          wrapper.innerHTML = `
+            <a href="#" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition">
+              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
+              <span>${cat.titulo}</span>
+            </a>
+          `;
+        }
+        navContainer.appendChild(wrapper);
+      });
+
+      renderizarListaConfig();
+    }
+
+    function toggleDropdown(event, catId) {
+      event.stopPropagation();
+      const dropdownAlvo = document.getElementById(`dropdown-${catId}`);
+      const estavaAberto = !dropdownAlvo.classList.contains('hidden');
+      fecharTodosDropdowns();
+      if (!estavaAberto) dropdownAlvo.classList.remove('hidden');
+    }
+
+    function fecharTodosDropdowns() {
+      document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#mainNav')) fecharTodosDropdowns();
+    });
+
+    // Modais de Menu
+    function abrirModalMenu() { document.getElementById('modalMenu').classList.remove('hidden'); document.getElementById('modalMenu').classList.add('flex'); }
+    function fecharModalMenu() { document.getElementById('modalMenu').classList.add('hidden'); document.getElementById('modalMenu').classList.remove('flex'); }
+
+    function adicionarOpcaoMenu() {
+      const catId = document.getElementById('categoriaSelect').value;
+      const nome = document.getElementById('novoNomeItem').value.trim();
+      const url = document.getElementById('novoLinkItem').value.trim() || '#';
+
+      if (!nome) return alert('Informe o nome da opção.');
+
+      const categoria = estruturaMenu.find(c => c.id === catId);
+      if (categoria) {
+        categoria.itens.push({ nome, url, icone: 'fa-circle-dot' });
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+        document.getElementById('novoNomeItem').value = '';
+        document.getElementById('novoLinkItem').value = '';
+      }
+    }
+
+    function removerOpcaoMenu(catId, index) {
+      const categoria = estruturaMenu.find(c => c.id === catId);
+      if (categoria) {
+        categoria.itens.splice(index, 1);
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+      }
+    }
+
+    function restaurarMenuPadrao() {
+      if (confirm('Deseja restaurar o menu original?')) {
+        estruturaMenu = JSON.parse(JSON.stringify(menuPadrao));
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+      }
+    }
+
+    function renderizarListaConfig() {
+      const container = document.getElementById('listaMenuConfig');
+      container.innerHTML = '';
+      estruturaMenu.forEach(cat => {
+        cat.itens.forEach((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'flex justify-between items-center py-1.5 px-2 hover:bg-gray-50';
+          row.innerHTML = `
+            <div>
+              <span class="font-semibold text-slate-800">${item.nome}</span>
+              <span class="text-xs text-gray-400 block">${cat.titulo} &bull; ${item.url}</span>
+            </div>
+            ${item.acao ? '<span class="text-xs text-gray-400 font-semibold">(Sistema)</span>' : `
+              <button onclick="removerOpcaoMenu('${cat.id}', ${index})" class="text-red-500 hover:text-red-700 text-xs px-2 py-1">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            `}
+          `;
+          container.appendChild(row);
+        });
+      });
+    }
+
+    // --- CARREGAMENTO DINÂMICO DA TELA DE LAYOUT ---
+    let layoutEnderecos = JSON.parse(localStorage.getItem('kullka_layout')) || [
+      { id: 1, codigo: 'DOCA-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '', coluna: '', nivel: '' },
+      { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: '01', coluna: '01', nivel: '1' },
+      { id: 3, codigo: 'LOJA-SET01-C03-N2', zona: 'LOJA', subzona: 'Gôndolas', corredor: '03', coluna: '02', nivel: '2' }
+    ];
+
+    let idEnderecoEdicao = null; // Controla edição individual de endereços
+    let idEnderecoEdicao = null;
+
+    function carregarTelaLayout() {
+      const main = document.getElementById('conteudoPrincipal');
+      main.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-200 pb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-map-location-dot text-emerald-600"></i> Gestão de Layout & Endereçamento Logístico
+            </h1>
+            <p class="text-gray-500 text-sm">Configure a localização física/lógica (Zonas, Corredores, Racks e Níveis) do seu armazém ou loja.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="abrirModalLayout()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              <i class="fa-solid fa-plus"></i> Nova Localização
+            </button>
+            <button onclick="gerarLocsLoteModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              <i class="fa-solid fa-cubes-stacked"></i> Gerador em Lote
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center">
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Filtrar por Zona</label>
+            <select id="filtroZona" onchange="filtrarEnderecos()" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
+              <option value="">Todas as Zonas</option>
+              <option value="DOCA">Doca</option>
+              <option value="DEP">Depósito</option>
+              <option value="LOJA">Loja / Salão</option>
+            </select>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Buscar Endereço (Código)</label>
+            <input type="text" id="filtroCodigo" oninput="filtrarEnderecos()" placeholder="Ex: DEP-COR01-C02-N3" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-base">Estrutura de Armazenamento Cadastrada</h3>
+            <span id="totalEnderecos" class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">0 Endereços</span>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-gray-200">
+                  <th class="py-3 px-4">Código / Tag</th>
+                  <th class="py-3 px-4">Zona Principal</th>
+                  <th class="py-3 px-4">Subzona</th>
+                  <th class="py-3 px-4">Corredor</th>
+                  <th class="py-3 px-4">Coluna / Prateleira</th>
+                  <th class="py-3 px-4">Nível / Altura</th>
+                  <th class="py-3 px-4 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaLayout" class="divide-y divide-gray-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      renderizarTabelaLayout();
+    }
+
+    function renderizarTabelaLayout(lista = layoutEnderecos) {
+      const tbody = document.getElementById('tabelaLayout');
+      const counter = document.getElementById('totalEnderecos');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      counter.innerText = `${lista.length} Endereços`;
+
+      if(lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Nenhum endereço logístico encontrado.</td></tr>`;
         return;
       }
 
-      paginas.forEach(pag => {
-        const target = dropdowns[pag.categoria];
-        if (target) {
-          const item = document.createElement('a');
-          item.href = `#${pag.slug}`;
-          item.className = 'flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors';
-          item.innerHTML = `<i class="${pag.icone || 'fa-solid fa-file'} text-emerald-400 w-4"></i> <span>${pag.titulo}</span>`;
+      lista.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-gray-100';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-800 font-mono text-xs">
+            <span class="bg-slate-100 border border-slate-300 px-2 py-1 rounded">${item.codigo}</span>
+          </td>
+          <td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-semibold ${getBadgeZona(item.zona)}">${item.zona}</span></td>
+          <td class="py-3 px-4 text-gray-600 text-xs">${item.subzona || '-'}</td>
+          <td class="py-3 px-4 text-gray-600 text-xs">${item.corredor ? 'Corredor ' + item.corredor : '-'}</td>
+          <td class="py-3 px-4 text-gray-600 text-xs">${item.coluna ? 'Coluna ' + item.coluna : '-'}</td>
+          <td class="py-3 px-4 text-gray-600 text-xs">${item.nivel ? 'Nível ' + item.nivel : '-'}</td>
+          <td class="py-3 px-4 text-center flex justify-center gap-1">
+            <button onclick="abrirModalEdicaoLayout(${item.id})" class="text-blue-500 hover:text-blue-700 px-2 py-1" title="Editar Layout">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="excluirEndereco(${item.id})" class="text-red-500 hover:text-red-700 px-2 py-1" title="Excluir Layout">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getBadgeZona(zona) {
+      switch(zona) {
+        case 'DOCA': return 'bg-amber-100 text-amber-800 border border-amber-300';
+        case 'DEP': return 'bg-blue-100 text-blue-800 border border-blue-300';
+        case 'LOJA': return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function atualizarCodigoPreview() {
+      const zona = document.getElementById('endZona').value;
+      const sub = document.getElementById('endSubzona').value.trim();
+      const cor = document.getElementById('endCorredor').value.trim();
+      const col = document.getElementById('endColuna').value.trim();
+      const niv = document.getElementById('endNivel').value.trim();
+
+      let parts = [zona];
+      if (sub) parts.push(sub.toUpperCase().replace(/\s+/g, ''));
+      if (cor) parts.push(`C${cor}`);
+      if (col) parts.push(`COL${col}`);
+      if (niv) parts.push(`N${niv}`);
+
+      document.getElementById('previewCodigo').innerText = parts.join('-');
+    }
+
+    function abrirModalLayout() {
+      idEnderecoEdicao = null;
+      document.getElementById('formLayout').reset();
+      atualizarCodigoPreview();
+      document.getElementById('modalLayout').classList.remove('hidden');
+      document.getElementById('modalLayout').classList.add('flex');
+    }
+
+    function abrirModalEdicaoLayout(id) {
+      const item = layoutEnderecos.find(e => e.id === id);
+      if (!item) return;
+
+      idEnderecoEdicao = id;
+      document.getElementById('endZona').value = item.zona || 'DEP';
+      document.getElementById('endSubzona').value = item.subzona || '';
+      document.getElementById('endCorredor').value = item.corredor || '';
+      document.getElementById('endColuna').value = item.coluna || '';
+      document.getElementById('endNivel').value = item.nivel || '';
+
+      atualizarCodigoPreview();
+      document.getElementById('modalLayout').classList.remove('hidden');
+      document.getElementById('modalLayout').classList.add('flex');
+    }
+
+    function fecharModalLayout() {
+      idEnderecoEdicao = null;
+      document.getElementById('modalLayout').classList.add('hidden');
+      document.getElementById('modalLayout').classList.remove('flex');
+    }
+
+    function salvarEndereco(e) {
+      e.preventDefault();
+      const codigo = document.getElementById('previewCodigo').innerText;
+      const zona = document.getElementById('endZona').value;
+      const subzona = document.getElementById('endSubzona').value.trim();
+      const corredor = document.getElementById('endCorredor').value.trim();
+      const coluna = document.getElementById('endColuna').value.trim();
+      const nivel = document.getElementById('endNivel').value.trim();
+
+      if (idEnderecoEdicao) {
+        const index = layoutEnderecos.findIndex(e => e.id === idEnderecoEdicao);
+        if (index !== -1) {
+          layoutEnderecos[index] = { id: idEnderecoEdicao, codigo, zona, subzona, corredor, coluna, nivel };
+        }
+      } else {
+        const novo = { id: Date.now(), codigo, zona, subzona, corredor, coluna, nivel };
+        layoutEnderecos.push(novo);
+      }
+
+      salvarAtualizarLayout();
+      fecharModalLayout();
+    }
+
+    function excluirEndereco(id) {
+      if(confirm('Excluir este endereço do layout?')) {
+        layoutEnderecos = layoutEnderecos.filter(e => e.id !== id);
+        salvarAtualizarLayout();
+      }
+    }
+
+    function gerarLocsLoteModal() {
+      document.getElementById('modalLote').classList.remove('hidden');
+      document.getElementById('modalLote').classList.add('flex');
+    }
+
+    function fecharModalLote() {
+      document.getElementById('modalLote').classList.add('hidden');
+      document.getElementById('modalLote').classList.remove('flex');
+    }
+
+    function gerarLoteEnderecos(e) {
+      e.preventDefault();
+      const zona = document.getElementById('loteZona').value;
+      const numCor = parseInt(document.getElementById('loteCorredores').value);
+      const numCol = parseInt(document.getElementById('loteColunas').value);
+      const numNiv = parseInt(document.getElementById('loteNiveis').value);
+
+      for(let c = 1; c <= numCor; c++) {
+        for(let col = 1; col <= numCol; col++) {
+          for(let n = 1; n <= numNiv; n++) {
+            const corStr = String(c).padStart(2, '0');
+            const colStr = String(col).padStart(2, '0');
+            const cod = `${zona}-C${corStr}-COL${colStr}-N${n}`;
+
+            if(!layoutEnderecos.some(item => item.codigo === cod)) {
+              layoutEnderecos.push({
+                id: Date.now() + Math.random(),
+                codigo: cod,
+                zona: zona,
+                subzona: 'Automático',
+                corredor: corStr,
+                coluna: colStr,
+                nivel: String(n)
+              });
+            }
+          }
+        }
+      }
+
+      salvarAtualizarLayout();
+      fecharModalLote();
+    }
+
+    function filtrarEnderecos() {
+      const z = document.getElementById('filtroZona').value.toUpperCase();
+      const cod = document.getElementById('filtroCodigo').value.toUpperCase().trim();
+
+      const resultado = layoutEnderecos.filter(item => {
+        const matchZona = !z || item.zona.includes(z);
+        const matchCod = !cod || item.codigo.includes(cod);
+        return matchZona && matchCod;
+      });
+
+      renderizarTabelaLayout(resultado);
+    }
+
+    function salvarAtualizarLayout() {
+      localStorage.setItem('kullka_layout', JSON.stringify(layoutEnderecos));
+      renderizarTabelaLayout();
+    }
+
+    // --- CARREGAMENTO E GESTÃO DE PÁGINAS ---
+    let idPaginaEdicao = null;
+
+    function carregarTelaGestaoPaginas() {
+      const main = document.getElementById('conteudoPrincipal');
+      main.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-200 pb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-file-code text-emerald-600"></i> Gestão de Páginas
+            </h1>
+            <p class="text-gray-500 text-sm">Crie, edite e gerencie as páginas da estrutura do sistema.</p>
+          </div>
+          <button onclick="abrirModalPagina()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Nova Página
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-base">Páginas Registradas</h3>
+            <span id="totalPaginas" class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">0 Páginas</span>
+          </div>
           
-          item.addEventListener('click', (e) => {
-            e.preventDefault();
-            navegarPara(pag.slug);
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-gray-200">
+                  <th class="py-3 px-4">Título</th>
+                  <th class="py-3 px-4">Slug / URL</th>
+                  <th class="py-3 px-4">Categoria Menu</th>
+                  <th class="py-3 px-4 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaPaginas" class="divide-y divide-gray-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      renderizarTabelaPaginas();
+    }
+
+    function renderizarTabelaPaginas() {
+      const tbody = document.getElementById('tabelaPaginas');
+      const counter = document.getElementById('totalPaginas');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      counter.innerText = `${paginasSistema.length} Páginas`;
+
+      if (paginasSistema.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">Nenhuma página cadastrada.</td></tr>`;
+        return;
+      }
+
+      paginasSistema.forEach(pag => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-gray-100';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid ${pag.icone || 'fa-file'} text-emerald-600"></i> ${pag.titulo}
+          </td>
+          <td class="py-3 px-4 font-mono text-xs text-gray-600">/${pag.slug}</td>
+          <td class="py-3 px-4 text-xs font-semibold uppercase text-slate-600">${pag.categoria}</td>
+          <td class="py-3 px-4 text-center flex justify-center gap-1">
+            <button onclick="carregarPaginaDinamica(${pag.id})" class="text-emerald-600 hover:text-emerald-800 px-2 py-1" title="Visualizar">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button onclick="abrirModalEdicaoPagina(${pag.id})" class="text-blue-500 hover:text-blue-700 px-2 py-1" title="Editar">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="excluirPagina(${pag.id})" class="text-red-500 hover:text-red-700 px-2 py-1" title="Excluir">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalPagina() {
+      idPaginaEdicao = null;
+      document.getElementById('tituloModalPagina').innerText = 'Nova Página';
+      document.getElementById('formPagina').reset();
+      document.getElementById('modalPagina').classList.remove('hidden');
+      document.getElementById('modalPagina').classList.add('flex');
+    }
+
+    function abrirModalEdicaoPagina(id) {
+      const pag = paginasSistema.find(p => p.id === id);
+      if (!pag) return;
+
+      idPaginaEdicao = id;
+      document.getElementById('tituloModalPagina').innerText = 'Editar Página';
+      document.getElementById('pagTitulo').value = pag.titulo;
+      document.getElementById('pagSlug').value = pag.slug;
+      document.getElementById('pagCategoria').value = pag.categoria;
+      document.getElementById('pagIcone').value = pag.icone || '';
+      document.getElementById('pagConteudo').value = pag.conteudo || '';
+
+      document.getElementById('modalPagina').classList.remove('hidden');
+      document.getElementById('modalPagina').classList.add('flex');
+    }
+
+    function fecharModalPagina() {
+      idPaginaEdicao = null;
+      document.getElementById('modalPagina').classList.add('hidden');
+      document.getElementById('modalPagina').classList.remove('flex');
+    }
+
+    function salvarPagina(e) {
+      e.preventDefault();
+      const titulo = document.getElementById('pagTitulo').value.trim();
+      const slug = document.getElementById('pagSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+      const categoria = document.getElementById('pagCategoria').value;
+      const icone = document.getElementById('pagIcone').value.trim() || 'fa-file';
+      const conteudo = document.getElementById('pagConteudo').value;
+
+      if (idPaginaEdicao) {
+        const index = paginasSistema.findIndex(p => p.id === idPaginaEdicao);
+        if (index !== -1) {
+          paginasSistema[index] = { id: idPaginaEdicao, titulo, slug, categoria, icone, conteudo };
+        }
+      } else {
+        const nova = { id: Date.now(), titulo, slug, categoria, icone, conteudo };
+        paginasSistema.push(nova);
+        
+        // Adiciona automaticamente no menu caso pertença a uma categoria
+        const catObj = estruturaMenu.find(c => c.id === categoria);
+        if (catObj) {
+          catObj.itens.push({
+            nome: titulo,
+            url: `#${slug}`,
+            icone: icone,
+            acao: `carregarPaginaDinamicaPorSlug('${slug}')`
           });
-
-          target.appendChild(item);
+          localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+          renderizarMenu();
         }
-      });
+      }
 
-      // Trata dropdowns vazios
-      Object.keys(dropdowns).forEach(key => {
-        const target = dropdowns[key];
-        if (target && target.children.length === 0) {
-          target.innerHTML = '<span class="block px-4 py-2 text-xs text-slate-500">Nenhum subitem</span>';
-        }
-      });
+      localStorage.setItem('kullka_paginas', JSON.stringify(paginasSistema));
+      renderizarTabelaPaginas();
+      fecharModalPagina();
     }
 
-    function navegarPara(slug) {
-      console.log('Navegando para:', slug);
-      // Mantida a lógica original de troca de views do SPA
+    function excluirPagina(id) {
+      if (confirm('Deseja excluir esta página?')) {
+        paginasSistema = paginasSistema.filter(p => p.id !== id);
+        localStorage.setItem('kullka_paginas', JSON.stringify(paginasSistema));
+        renderizarTabelaPaginas();
+      }
     }
 
-    // Executa ao carregar a página
-    document.addEventListener('DOMContentLoaded', () => {
-      renderizarMenuCategorizado();
-    });
+    function carregarPaginaDinamica(id) {
+      const pag = paginasSistema.find(p => p.id === id);
+      if (!pag) return;
+      
+      const main = document.getElementById('conteudoPrincipal');
+      main.innerHTML = `
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div class="border-b border-gray-200 pb-4 mb-4 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid ${pag.icone || 'fa-file'} text-emerald-600"></i> ${pag.titulo}
+            </h1>
+            <button onclick="carregarTelaGestaoPaginas()" class="text-xs bg-slate-800 text-white px-3 py-1.5 rounded hover:bg-slate-700">Voltar para Páginas</button>
+          </div>
+          <div>${pag.conteudo || '<p class="text-gray-400">Página sem conteúdo.</p>'}</div>
+        </div>
+      `;
+    }
+
+    function carregarPaginaDinamicaPorSlug(slug) {
+      const pag = paginasSistema.find(p => p.slug === slug);
+      if (pag) carregarPaginaDinamica(pag.id);
+    }
+
+    // Inicialização do Menu
+    renderizarMenu();
   </script>
 </body>
 </html>
