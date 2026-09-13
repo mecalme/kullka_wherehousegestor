@@ -16,7 +16,7 @@
   <!-- Header / Navegação -->
   <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
     <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
-
+      
       <!-- Logotipo Kullka -->
       <a href="index.html" class="flex items-center space-x-3 group">
         <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
@@ -34,22 +34,15 @@
         </div>
       </a>
 
-      <!-- Menu Principal -->
-      <!-- Menu Principal Renderizado via JS -->
+      <!-- Menu Principal Dynamic -->
       <nav id="mainNav" class="hidden md:flex items-center space-x-1 lg:space-x-4 mt-4 md:mt-0 relative"></nav>
-
+      
     </div>
   </header>
 
-  <!-- Zona de Trabalho Vazia -->
-  <main class="container mx-auto mt-6 p-4 flex-grow">
-    <!-- Espaço reservado para carregar o conteúdo das telas -->
-  <!-- Zona de Trabalho (Inicialmente Vazia) -->
-  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow">
-    <!-- O conteúdo da tela (ex: Layout) será carregado aqui via clique no menu -->
-  </main>
+  <!-- Zona de Trabalho Vazia (Inicialmente sem conteúdo) -->
+  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow"></main>
 
-  <!-- Modal do Gerenciador de Menu (Manutenção) -->
   <!-- MODAL 1: Cadastro/Edição Individual de Endereço -->
   <div id="modalLayout" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
@@ -150,20 +143,47 @@
   <div id="modalMenu" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
       <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-@@ -83,22 +179,22 @@
+        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-sliders text-emerald-400"></i> Gerenciador de Opções do Menu</h3>
+        <button onclick="fecharModalMenu()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+          <h4 class="font-bold text-sm text-slate-700">Adicionar Novo Link</h4>
+          <div>
+            <select id="categoriaSelect" class="w-full border border-gray-300 p-2 rounded text-sm">
+              <option value="manutencao">Manutenção</option>
+              <option value="gestao">Gestão Operacional</option>
+              <option value="financas">Finanças</option>
+              <option value="relatorios">Relatórios</option>
+            </select>
+          </div>
+          <div><input type="text" id="novoNomeItem" placeholder="Nome da opção" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
+          <div><input type="text" id="novoLinkItem" placeholder="URL ex: pagina.html" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
+          <button onclick="adicionarOpcaoMenu()" class="w-full bg-emerald-600 text-white font-medium py-2 rounded text-sm">Adicionar</button>
+        </div>
+        <div id="listaMenuConfig" class="max-h-48 overflow-y-auto divide-y border rounded-lg p-2 text-sm bg-white"></div>
+      </div>
+      <div class="bg-gray-50 px-6 py-3 flex justify-between">
+        <button onclick="restaurarMenuPadrao()" class="text-xs text-red-600 hover:underline">Restaurar Padrão</button>
+        <button onclick="fecharModalMenu()" class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-medium">Concluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <footer class="bg-slate-900 text-gray-400 text-sm py-6 mt-12 border-t border-slate-800">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2026 Kullka - Supply Chain Manager. Todos os direitos reservados.</p>
     </div>
   </footer>
 
-  <!-- Lógica da Aplicação -->
-  <!-- Scripts e Lógica de Navegação -->
+  <!-- Scripts da Aplicação -->
   <script>
     // Configuração do Supabase
-    // Supabase
     const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Estrutura Base do Menu
     // Estrutura do Menu
     const menuPadrao = [
       {
@@ -171,27 +191,71 @@
         titulo: 'Manutenção',
         icone: 'fa-wrench',
         itens: [
-          { nome: 'Cadastro de Produtos', url: 'produtos.html', icone: 'fa-tags' },
-          { nome: 'Layout', url: 'layout.html', icone: 'fa-map-location-dot' },
+          { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
           { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
           { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
         ]
       },
-@@ -154,40 +250,25 @@
+      {
+        id: 'gestao',
+        titulo: 'Gestão Operacional',
+        icone: 'fa-boxes-packing',
+        itens: [
+          { nome: 'Movimentações', url: '#', icone: 'fa-arrows-rotate' }
+        ]
+      },
+      { id: 'financas', titulo: 'Finanças', icone: 'fa-chart-line', itens: [] },
+      { id: 'relatorios', titulo: 'Relatórios', icone: 'fa-file-contract', itens: [] }
+    ];
+
+    let estruturaMenu = JSON.parse(localStorage.getItem('kullka_menu')) || menuPadrao;
+
+    function renderizarMenu() {
+      const navContainer = document.getElementById('mainNav');
+      navContainer.innerHTML = '';
+
+      estruturaMenu.forEach(cat => {
+        const temSubmenu = cat.itens.length > 0;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative menu-item';
+
+        if (temSubmenu) {
+          wrapper.innerHTML = `
+            <button onclick="toggleDropdown(event, '${cat.id}')" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition focus:outline-none">
+              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
+              <span>${cat.titulo}</span>
+              <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
+            </button>
+            <div id="dropdown-${cat.id}" class="dropdown-menu absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 hidden border border-gray-100 z-50">
+              ${cat.itens.map(item => {
+                const clickHandler = item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : `onclick="fecharTodosDropdowns();"`;
+                return `
+                  <a href="${item.url}" ${clickHandler} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
+                    <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else {
+          wrapper.innerHTML = `
+            <a href="#" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition">
+              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
+              <span>${cat.titulo}</span>
+            </a>
+          `;
+        }
+        navContainer.appendChild(wrapper);
+      });
+
       renderizarListaConfig();
     }
 
-    // Alternar visibilidade dos submenus ao clicar
     function toggleDropdown(event, catId) {
       event.stopPropagation();
       const dropdownAlvo = document.getElementById(`dropdown-${catId}`);
       const estavaAberto = !dropdownAlvo.classList.contains('hidden');
-
       fecharTodosDropdowns();
-
-      if (!estavaAberto) {
-        dropdownAlvo.classList.remove('hidden');
-      }
       if (!estavaAberto) dropdownAlvo.classList.remove('hidden');
     }
 
@@ -199,34 +263,71 @@
       document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
     }
 
-    // Fechar dropdowns quando clicar fora do menu
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#mainNav')) {
-        fecharTodosDropdowns();
-      }
       if (!e.target.closest('#mainNav')) fecharTodosDropdowns();
     });
 
-    // Funções do Modal de Gerenciamento do Menu
-    function abrirModalMenu() { 
-      document.getElementById('modalMenu').classList.remove('hidden'); 
-      document.getElementById('modalMenu').classList.add('flex'); 
-    }
-    
-    function fecharModalMenu() { 
-      document.getElementById('modalMenu').classList.add('hidden'); 
-      document.getElementById('modalMenu').classList.remove('flex'); 
-    }
+    // Modais de Menu
     function abrirModalMenu() { document.getElementById('modalMenu').classList.remove('hidden'); document.getElementById('modalMenu').classList.add('flex'); }
     function fecharModalMenu() { document.getElementById('modalMenu').classList.add('hidden'); document.getElementById('modalMenu').classList.remove('flex'); }
 
     function adicionarOpcaoMenu() {
       const catId = document.getElementById('categoriaSelect').value;
-@@ -246,7 +327,232 @@
+      const nome = document.getElementById('novoNomeItem').value.trim();
+      const url = document.getElementById('novoLinkItem').value.trim() || '#';
+
+      if (!nome) return alert('Informe o nome da opção.');
+
+      const categoria = estruturaMenu.find(c => c.id === catId);
+      if (categoria) {
+        categoria.itens.push({ nome, url, icone: 'fa-circle-dot' });
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+        document.getElementById('novoNomeItem').value = '';
+        document.getElementById('novoLinkItem').value = '';
+      }
+    }
+
+    function removerOpcaoMenu(catId, index) {
+      const categoria = estruturaMenu.find(c => c.id === catId);
+      if (categoria) {
+        categoria.itens.splice(index, 1);
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+      }
+    }
+
+    function restaurarMenuPadrao() {
+      if (confirm('Deseja restaurar o menu original?')) {
+        estruturaMenu = JSON.parse(JSON.stringify(menuPadrao));
+        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
+        renderizarMenu();
+      }
+    }
+
+    function renderizarListaConfig() {
+      const container = document.getElementById('listaMenuConfig');
+      container.innerHTML = '';
+      estruturaMenu.forEach(cat => {
+        cat.itens.forEach((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'flex justify-between items-center py-1.5 px-2 hover:bg-gray-50';
+          row.innerHTML = `
+            <div>
+              <span class="font-semibold text-slate-800">${item.nome}</span>
+              <span class="text-xs text-gray-400 block">${cat.titulo} &bull; ${item.url}</span>
+            </div>
+            ${item.acao ? '<span class="text-xs text-gray-400 font-semibold">(Sistema)</span>' : `
+              <button onclick="removerOpcaoMenu('${cat.id}', ${index})" class="text-red-500 hover:text-red-700 text-xs px-2 py-1">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            `}
+          `;
+          container.appendChild(row);
+        });
       });
     }
 
-    // Renderizar Menu na Inicialização
     // --- CARREGAMENTO DINÂMICO DA TELA DE LAYOUT ---
     let layoutEnderecos = JSON.parse(localStorage.getItem('kullka_layout')) || [
       { id: 1, codigo: 'DOCA-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '', coluna: '', nivel: '' },
@@ -456,3 +557,4 @@
     renderizarMenu();
   </script>
 </body>
+</html>
