@@ -34,16 +34,14 @@
         </div>
       </a>
 
-      <!-- Menu Principal Renderizado via JS -->
+      <!-- Menu Principal Dynamic -->
       <nav id="mainNav" class="hidden md:flex items-center space-x-1 lg:space-x-4 mt-4 md:mt-0 relative"></nav>
       
     </div>
   </header>
 
-  <!-- Zona de Trabalho (Inicialmente Vazia) -->
-  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow">
-    <!-- O conteúdo da tela (ex: Layout) será carregado aqui via clique no menu -->
-  </main>
+  <!-- Zona de Trabalho Vazia (Inicialmente sem conteúdo) -->
+  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow"></main>
 
   <!-- MODAL 1: Cadastro/Edição Individual de Endereço -->
   <div id="modalLayout" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
@@ -179,9 +177,9 @@
     </div>
   </footer>
 
-  <!-- Scripts e Lógica de Navegação -->
+  <!-- Scripts da Aplicação -->
   <script>
-    // Supabase
+    // Configuração do Supabase
     const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -193,7 +191,7 @@
         titulo: 'Manutenção',
         icone: 'fa-wrench',
         itens: [
-          { nome: 'Cadastro de Produtos', url: 'produtos.html', icone: 'fa-tags' },
+          { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
           { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
           { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
         ]
@@ -203,7 +201,7 @@
         titulo: 'Gestão Operacional',
         icone: 'fa-boxes-packing',
         itens: [
-          { nome: 'Movimentações', url: 'movimentacoes.html', icone: 'fa-arrows-rotate' }
+          { nome: 'Movimentações', url: '#', icone: 'fa-arrows-rotate' }
         ]
       },
       { id: 'financas', titulo: 'Finanças', icone: 'fa-chart-line', itens: [] },
@@ -229,11 +227,14 @@
               <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
             </button>
             <div id="dropdown-${cat.id}" class="dropdown-menu absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 hidden border border-gray-100 z-50">
-              ${cat.itens.map(item => `
-                <a href="${item.url}" ${item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : ''} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
-                  <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
-                </a>
-              `).join('')}
+              ${cat.itens.map(item => {
+                const clickHandler = item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : `onclick="fecharTodosDropdowns();"`;
+                return `
+                  <a href="${item.url}" ${clickHandler} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
+                    <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
+                  </a>
+                `;
+              }).join('')}
             </div>
           `;
         } else {
@@ -266,7 +267,7 @@
       if (!e.target.closest('#mainNav')) fecharTodosDropdowns();
     });
 
-    // Funções do Modal de Gerenciamento do Menu
+    // Modais de Menu
     function abrirModalMenu() { document.getElementById('modalMenu').classList.remove('hidden'); document.getElementById('modalMenu').classList.add('flex'); }
     function fecharModalMenu() { document.getElementById('modalMenu').classList.add('hidden'); document.getElementById('modalMenu').classList.remove('flex'); }
 
