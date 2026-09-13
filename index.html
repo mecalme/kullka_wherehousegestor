@@ -3,242 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kullka - Gestão de Layout & Endereçamento Logístico</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f8f9fa; }
-    .card { border-radius: 8px; }
-    .badge-zona { font-size: 0.85rem; padding: 5px 10px; }
-  </style>
+  <title>Kullka - Supply Chain Manager</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SDK Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#"><i class="fas fa-warehouse me-2"></i>KULLKA</a>
-    </div>
-  </nav>
+  <!-- Header / Navegação -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+    <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
 
-  <!-- Conteúdo Principal -->
-  <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h3 class="fw-bold mb-1"><i class="fas fa-map-marked-alt text-primary me-2"></i>Gestão de Layout & Endereçamento Logístico</h3>
-        <p class="text-muted mb-0">Configure a localização física/lógica do seu armazém ou loja.</p>
-      </div>
-      <div>
-        <button class="btn btn-success me-2" id="btnOpenNewModal">
-          <i class="fas fa-plus me-1"></i> Nova Localização
-        </button>
-        <button class="btn btn-dark"><i class="fas fa-sitemap me-1"></i> Gerador em Lote</button>
-      </div>
-    </div>
-
-    <!-- Tabela de Endereços Cadastrados -->
-    <div class="card shadow-sm">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 fw-bold">Estrutura de Armazenamento Cadastrada</h5>
-        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" id="totalCount">0 Endereços</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>CÓDIGO / TAG</th>
-                <th>ZONA PRINCIPAL</th>
-                <th>SUBZONA</th>
-                <th>CORREDOR</th>
-                <th>COLUNA / PRATELEIRA</th>
-                <th>NÍVEL / ALTURA</th>
-                <th class="text-center">AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Renderizado via JS -->
-            </tbody>
-          </table>
+      <!-- Logotipo Kullka -->
+      <a href="index.html" class="flex items-center space-x-3 group">
+        <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18" opacity="0.9" />
+            <path d="M5 21V10l7-5 7 5v11" />
+            <path d="M9 14h6" />
+            <path d="M9 18h6" />
+            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
+          </svg>
         </div>
-      </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-wide text-white block leading-tight">KULLKA</span>
+          <span class="text-xs text-emerald-400 font-semibold tracking-wider uppercase block">Supply Chain Manager</span>
+        </div>
+      </a>
+
+      <!-- Menu Principal Renderizado via JS -->
+      <!-- Menu Principal Dynamic -->
+      <nav id="mainNav" class="hidden md:flex items-center space-x-1 lg:space-x-4 mt-4 md:mt-0 relative"></nav>
+
     </div>
-  </div>
+  </header>
 
-  <!-- Modal para Criar / Editar Localização -->
-  <div class="modal fade" id="modalLocation" tabindex="-1" aria-labelledby="modalLocationLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="modalLocationLabel">Nova Localização</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="formLocation">
-            <div class="mb-3">
-              <label for="selectZona" class="form-label">Zona Principal</label>
-              <select class="form-select" id="selectZona" required>
-                <option value="DOCA">DOCA</option>
-                <option value="DEP">DEP (Depósito)</option>
-                <option value="LOJA">LOJA</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="inputSubzona" class="form-label">Subzona</label>
-              <input type="text" class="form-control" id="inputSubzona" placeholder="Ex: Paletes, Recebimento, Mercearia" required>
-            </div>
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label for="inputCorredor" class="form-label">Corredor</label>
-                <input type="text" class="form-control" id="inputCorredor" placeholder="Ex: Corredor 01">
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="inputColuna" class="form-label">Coluna</label>
-                <input type="text" class="form-control" id="inputColuna" placeholder="Ex: Coluna 01">
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="inputNivel" class="form-label">Nível</label>
-                <input type="text" class="form-control" id="inputNivel" placeholder="Ex: Nível 1">
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" id="btnSaveLocation">Salvar</button>
-        </div>
-      </div>
+  <!-- Zona de Trabalho (Inicialmente Vazia) -->
+  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow">
+    <!-- O conteúdo da tela (ex: Layout) será carregado aqui via clique no menu -->
+  </main>
+  <!-- Zona de Trabalho Vazia (Inicialmente sem conteúdo) -->
+  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow"></main>
+
+  <!-- MODAL 1: Cadastro/Edição Individual de Endereço -->
+  <div id="modalLayout" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+@@ -179,9 +177,9 @@
     </div>
-  </div>
+  </footer>
 
-  <!-- Scripts: Bootstrap 5 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+  <!-- Scripts e Lógica de Navegação -->
+  <!-- Scripts da Aplicação -->
   <script>
-    // Estado inicial dos dados
-    let locationsList = [
-      { id: 1, codigo: 'DOCA-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '-', coluna: '-', nivel: '-' },
-      { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: 'Corredor 01', coluna: 'Coluna 01', nivel: 'Nível 1' },
-      { id: 3, codigo: 'LOJA-SET01-C03-N2', zona: 'LOJA', subzona: 'Gôndolas', corredor: 'Corredor 03', coluna: 'Coluna 02', nivel: 'Nível 2' },
-      { id: 4, codigo: 'LOJA-MERCEARIA-C12-COL1-N1', zona: 'LOJA', subzona: 'Mercearia', corredor: 'Corredor 12', coluna: 'Coluna 1', nivel: 'Nível 1' }
-    ];
-
-    let editIndex = null;
-    const modalElement = new bootstrap.Modal(document.getElementById('modalLocation'));
-
-    // Renderiza a tabela
-    function renderTable() {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-
-      locationsList.forEach((item, index) => {
-        const tr = document.createElement('tr');
-        
-        // Cor do Badge da Zona
-        let badgeClass = 'bg-secondary';
-        if (item.zona === 'DOCA') badgeClass = 'bg-warning text-dark';
-        if (item.zona === 'DEP') badgeClass = 'bg-primary';
-        if (item.zona === 'LOJA') badgeClass = 'bg-success';
-
-        tr.innerHTML = `
-          <td class="fw-bold">${item.codigo}</td>
-          <td><span class="badge ${badgeClass} badge-zona">${item.zona}</span></td>
-          <td>${item.subzona || '-'}</td>
-          <td>${item.corredor || '-'}</td>
-          <td>${item.coluna || '-'}</td>
-          <td>${item.nivel || '-'}</td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${index})" title="Editar">
-              <i class="fas fa-edit"></i>
+    // Supabase
+    // Configuração do Supabase
+    const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+@@ -193,7 +191,7 @@
+        titulo: 'Manutenção',
+        icone: 'fa-wrench',
+        itens: [
+          { nome: 'Cadastro de Produtos', url: 'produtos.html', icone: 'fa-tags' },
+          { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
+          { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
+          { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
+        ]
+@@ -203,7 +201,7 @@
+        titulo: 'Gestão Operacional',
+        icone: 'fa-boxes-packing',
+        itens: [
+          { nome: 'Movimentações', url: 'movimentacoes.html', icone: 'fa-arrows-rotate' }
+          { nome: 'Movimentações', url: '#', icone: 'fa-arrows-rotate' }
+        ]
+      },
+      { id: 'financas', titulo: 'Finanças', icone: 'fa-chart-line', itens: [] },
+@@ -229,11 +227,14 @@
+              <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteLocation(${index})" title="Excluir">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('totalCount').innerText = `${locationsList.length} Endereços`;
-    }
-
-    // Gerador automático de Tag/Código simples
-    function generateCode(zona, subzona, corredor, coluna, nivel) {
-      let code = zona;
-      if (corredor && corredor !== '-') code += `-${corredor.replace(/\s+/g, '').toUpperCase()}`;
-      if (coluna && coluna !== '-') code += `-${coluna.replace(/\s+/g, '').toUpperCase()}`;
-      if (nivel && nivel !== '-') code += `-${nivel.replace(/\s+/g, '').toUpperCase()}`;
-      if (code === zona && subzona) code += `-${subzona.substring(0, 3).toUpperCase()}-01`;
-      return code;
-    }
-
-    // Ação do Botão "Nova Localização"
-    document.getElementById('btnOpenNewModal').addEventListener('click', () => {
-      editIndex = null;
-      document.getElementById('formLocation').reset();
-      document.getElementById('modalLocationLabel').innerText = 'Nova Localização';
-      document.getElementById('btnSaveLocation').innerText = 'Salvar';
-      modalElement.show();
+            <div id="dropdown-${cat.id}" class="dropdown-menu absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 hidden border border-gray-100 z-50">
+              ${cat.itens.map(item => `
+                <a href="${item.url}" ${item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : ''} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
+                  <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
+                </a>
+              `).join('')}
+              ${cat.itens.map(item => {
+                const clickHandler = item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : `onclick="fecharTodosDropdowns();"`;
+                return `
+                  <a href="${item.url}" ${clickHandler} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
+                    <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else {
+@@ -266,7 +267,7 @@
+      if (!e.target.closest('#mainNav')) fecharTodosDropdowns();
     });
 
-    // Abrir Modal no Modo Edição
-    function openEditModal(index) {
-      editIndex = index;
-      const item = locationsList[index];
-
-      document.getElementById('selectZona').value = item.zona;
-      document.getElementById('inputSubzona').value = item.subzona !== '-' ? item.subzona : '';
-      document.getElementById('inputCorredor').value = item.corredor !== '-' ? item.corredor : '';
-      document.getElementById('inputColuna').value = item.coluna !== '-' ? item.coluna : '';
-      document.getElementById('inputNivel').value = item.nivel !== '-' ? item.nivel : '';
-
-      document.getElementById('modalLocationLabel').innerText = 'Editar Localização';
-      document.getElementById('btnSaveLocation').innerText = 'Atualizar';
-      modalElement.show();
-    }
-
-    // Salvar (Novo ou Edição)
-    document.getElementById('btnSaveLocation').addEventListener('click', () => {
-      const zona = document.getElementById('selectZona').value;
-      const subzona = document.getElementById('inputSubzona').value || '-';
-      const corredor = document.getElementById('inputCorredor').value || '-';
-      const coluna = document.getElementById('inputColuna').value || '-';
-      const nivel = document.getElementById('inputNivel').value || '-';
-      
-      const codigo = generateCode(zona, subzona, corredor, coluna, nivel);
-
-      const newItem = {
-        id: editIndex !== null ? locationsList[editIndex].id : Date.now(),
-        codigo: codigo,
-        zona: zona,
-        subzona: subzona,
-        corredor: corredor,
-        coluna: coluna,
-        nivel: nivel
-      };
-
-      if (editIndex !== null) {
-        locationsList[editIndex] = newItem;
-      } else {
-        locationsList.push(newItem);
-      }
-
-      renderTable();
-      modalElement.hide();
-    });
-
-    // Excluir registro
-    function deleteLocation(index) {
-      if (confirm('Tem certeza que deseja remover esta localização?')) {
-        locationsList.splice(index, 1);
-        renderTable();
-      }
-    }
-
-    // Inicialização
-    renderTable();
-  </script>
-</body>
-</html>
+    // Funções do Modal de Gerenciamento do Menu
+    // Modais de Menu
+    function abrirModalMenu() { document.getElementById('modalMenu').classList.remove('hidden'); document.getElementById('modalMenu').classList.add('flex'); }
+    function fecharModalMenu() { document.getElementById('modalMenu').classList.add('hidden'); document.getElementById('modalMenu').classList.remove('flex'); }
