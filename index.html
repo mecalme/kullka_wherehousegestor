@@ -3,558 +3,242 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kullka - Supply Chain Manager</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- SDK Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Kullka - Gestão de Layout & Endereçamento Logístico</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .card { border-radius: 8px; }
+    .badge-zona { font-size: 0.85rem; padding: 5px 10px; }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
+<body>
 
-  <!-- Header / Navegação -->
-  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
-    <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
-      
-      <!-- Logotipo Kullka -->
-      <a href="index.html" class="flex items-center space-x-3 group">
-        <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
-          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18" opacity="0.9" />
-            <path d="M5 21V10l7-5 7 5v11" />
-            <path d="M9 14h6" />
-            <path d="M9 18h6" />
-            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xl font-extrabold tracking-wide text-white block leading-tight">KULLKA</span>
-          <span class="text-xs text-emerald-400 font-semibold tracking-wider uppercase block">Supply Chain Manager</span>
-        </div>
-      </a>
-
-      <!-- Menu Principal Dynamic -->
-      <nav id="mainNav" class="hidden md:flex items-center space-x-1 lg:space-x-4 mt-4 md:mt-0 relative"></nav>
-      
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#"><i class="fas fa-warehouse me-2"></i>KULLKA</a>
     </div>
-  </header>
+  </nav>
 
-  <!-- Zona de Trabalho Vazia (Inicialmente sem conteúdo) -->
-  <main id="conteudoPrincipal" class="container mx-auto mt-6 p-4 flex-grow"></main>
-
-  <!-- MODAL 1: Cadastro/Edição Individual de Endereço -->
-  <div id="modalLayout" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
-      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-        <h3 class="font-bold text-lg flex items-center gap-2">
-          <i class="fa-solid fa-map-pin text-emerald-400"></i> Personalizar Endereço Logístico
-        </h3>
-        <button onclick="fecharModalLayout()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+  <!-- Conteúdo Principal -->
+  <div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1"><i class="fas fa-map-marked-alt text-primary me-2"></i>Gestão de Layout & Endereçamento Logístico</h3>
+        <p class="text-muted mb-0">Configure a localização física/lógica do seu armazém ou loja.</p>
       </div>
-
-      <form id="formLayout" onsubmit="salvarEndereco(event)" class="p-6 space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Zona Principal *</label>
-            <select id="endZona" required onchange="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
-              <option value="DOCA">Doca</option>
-              <option value="DEP">Depósito</option>
-              <option value="LOJA">Loja / Salão</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Subzona / Setor</label>
-            <input type="text" id="endSubzona" placeholder="Ex: Frios / Paletes" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Corredor</label>
-            <input type="text" id="endCorredor" placeholder="Ex: 01" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Coluna</label>
-            <input type="text" id="endColuna" placeholder="Ex: A" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Nível / Altura</label>
-            <input type="text" id="endNivel" placeholder="Ex: 1" oninput="atualizarCodigoPreview()" class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500">
-          </div>
-        </div>
-
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <span class="block text-xs font-semibold text-gray-500 uppercase">Código Formatado Preview:</span>
-          <span id="previewCodigo" class="text-base font-extrabold text-emerald-700 tracking-wider">DOCA</span>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="fecharModalLayout()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm font-medium hover:bg-gray-300">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded text-sm font-medium hover:bg-emerald-700">Salvar Endereço</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 2: Gerador em Lote -->
-  <div id="modalLote" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
-      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-        <h3 class="font-bold text-lg flex items-center gap-2">
-          <i class="fa-solid fa-cubes-stacked text-emerald-400"></i> Gerador Automático de Racks
-        </h3>
-        <button onclick="fecharModalLote()" class="text-gray-400 hover:text-white text-xl">&times;</button>
-      </div>
-
-      <form onsubmit="gerarLoteEnderecos(event)" class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Zona Target</label>
-          <select id="loteZona" class="w-full border border-gray-300 p-2 rounded text-sm">
-            <option value="DEP">Depósito</option>
-            <option value="LOJA">Loja</option>
-            <option value="DOCA">Doca</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Nº Corredores</label>
-            <input type="number" id="loteCorredores" min="1" max="10" value="2" class="w-full border border-gray-300 p-2 rounded text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Colunas/Prat.</label>
-            <input type="number" id="loteColunas" min="1" max="10" value="3" class="w-full border border-gray-300 p-2 rounded text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Níveis/Alturas</label>
-            <input type="number" id="loteNiveis" min="1" max="5" value="3" class="w-full border border-gray-300 p-2 rounded text-sm">
-          </div>
-        </div>
-
-        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded font-medium text-sm transition">
-          Gerar Matriz de Endereçamentos
+      <div>
+        <button class="btn btn-success me-2" id="btnOpenNewModal">
+          <i class="fas fa-plus me-1"></i> Nova Localização
         </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Gerenciador de Menu -->
-  <div id="modalMenu" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
-      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-sliders text-emerald-400"></i> Gerenciador de Opções do Menu</h3>
-        <button onclick="fecharModalMenu()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+        <button class="btn btn-dark"><i class="fas fa-sitemap me-1"></i> Gerador em Lote</button>
       </div>
-      <div class="p-6 space-y-4">
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-          <h4 class="font-bold text-sm text-slate-700">Adicionar Novo Link</h4>
-          <div>
-            <select id="categoriaSelect" class="w-full border border-gray-300 p-2 rounded text-sm">
-              <option value="manutencao">Manutenção</option>
-              <option value="gestao">Gestão Operacional</option>
-              <option value="financas">Finanças</option>
-              <option value="relatorios">Relatórios</option>
-            </select>
-          </div>
-          <div><input type="text" id="novoNomeItem" placeholder="Nome da opção" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
-          <div><input type="text" id="novoLinkItem" placeholder="URL ex: pagina.html" class="w-full border border-gray-300 p-2 rounded text-sm"></div>
-          <button onclick="adicionarOpcaoMenu()" class="w-full bg-emerald-600 text-white font-medium py-2 rounded text-sm">Adicionar</button>
+    </div>
+
+    <!-- Tabela de Endereços Cadastrados -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Estrutura de Armazenamento Cadastrada</h5>
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" id="totalCount">0 Endereços</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>CÓDIGO / TAG</th>
+                <th>ZONA PRINCIPAL</th>
+                <th>SUBZONA</th>
+                <th>CORREDOR</th>
+                <th>COLUNA / PRATELEIRA</th>
+                <th>NÍVEL / ALTURA</th>
+                <th class="text-center">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
         </div>
-        <div id="listaMenuConfig" class="max-h-48 overflow-y-auto divide-y border rounded-lg p-2 text-sm bg-white"></div>
-      </div>
-      <div class="bg-gray-50 px-6 py-3 flex justify-between">
-        <button onclick="restaurarMenuPadrao()" class="text-xs text-red-600 hover:underline">Restaurar Padrão</button>
-        <button onclick="fecharModalMenu()" class="bg-slate-800 text-white px-4 py-2 rounded text-sm font-medium">Concluir</button>
       </div>
     </div>
   </div>
 
-  <!-- Rodapé -->
-  <footer class="bg-slate-900 text-gray-400 text-sm py-6 mt-12 border-t border-slate-800">
-    <div class="container mx-auto px-4 text-center">
-      <p>&copy; 2026 Kullka - Supply Chain Manager. Todos os direitos reservados.</p>
+  <!-- Modal para Criar / Editar Localização -->
+  <div class="modal fade" id="modalLocation" tabindex="-1" aria-labelledby="modalLocationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="modalLocationLabel">Nova Localização</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formLocation">
+            <div class="mb-3">
+              <label for="selectZona" class="form-label">Zona Principal</label>
+              <select class="form-select" id="selectZona" required>
+                <option value="DOCA">DOCA</option>
+                <option value="DEP">DEP (Depósito)</option>
+                <option value="LOJA">LOJA</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="inputSubzona" class="form-label">Subzona</label>
+              <input type="text" class="form-control" id="inputSubzona" placeholder="Ex: Paletes, Recebimento, Mercearia" required>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="inputCorredor" class="form-label">Corredor</label>
+                <input type="text" class="form-control" id="inputCorredor" placeholder="Ex: Corredor 01">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="inputColuna" class="form-label">Coluna</label>
+                <input type="text" class="form-control" id="inputColuna" placeholder="Ex: Coluna 01">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="inputNivel" class="form-label">Nível</label>
+                <input type="text" class="form-control" id="inputNivel" placeholder="Ex: Nível 1">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSaveLocation">Salvar</button>
+        </div>
+      </div>
     </div>
-  </footer>
+  </div>
 
-  <!-- Scripts da Aplicação -->
+  <!-- Scripts: Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    // Configuração do Supabase
-    const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // Estrutura do Menu
-    const menuPadrao = [
-      {
-        id: 'manutencao',
-        titulo: 'Manutenção',
-        icone: 'fa-wrench',
-        itens: [
-          { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
-          { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
-          { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
-        ]
-      },
-      {
-        id: 'gestao',
-        titulo: 'Gestão Operacional',
-        icone: 'fa-boxes-packing',
-        itens: [
-          { nome: 'Movimentações', url: '#', icone: 'fa-arrows-rotate' }
-        ]
-      },
-      { id: 'financas', titulo: 'Finanças', icone: 'fa-chart-line', itens: [] },
-      { id: 'relatorios', titulo: 'Relatórios', icone: 'fa-file-contract', itens: [] }
+    // Estado inicial dos dados
+    let locationsList = [
+      { id: 1, codigo: 'DOCA-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '-', coluna: '-', nivel: '-' },
+      { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: 'Corredor 01', coluna: 'Coluna 01', nivel: 'Nível 1' },
+      { id: 3, codigo: 'LOJA-SET01-C03-N2', zona: 'LOJA', subzona: 'Gôndolas', corredor: 'Corredor 03', coluna: 'Coluna 02', nivel: 'Nível 2' },
+      { id: 4, codigo: 'LOJA-MERCEARIA-C12-COL1-N1', zona: 'LOJA', subzona: 'Mercearia', corredor: 'Corredor 12', coluna: 'Coluna 1', nivel: 'Nível 1' }
     ];
 
-    let estruturaMenu = JSON.parse(localStorage.getItem('kullka_menu')) || menuPadrao;
+    let editIndex = null;
+    const modalElement = new bootstrap.Modal(document.getElementById('modalLocation'));
 
-    function renderizarMenu() {
-      const navContainer = document.getElementById('mainNav');
-      navContainer.innerHTML = '';
-
-      estruturaMenu.forEach(cat => {
-        const temSubmenu = cat.itens.length > 0;
-        const wrapper = document.createElement('div');
-        wrapper.className = 'relative menu-item';
-
-        if (temSubmenu) {
-          wrapper.innerHTML = `
-            <button onclick="toggleDropdown(event, '${cat.id}')" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition focus:outline-none">
-              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
-              <span>${cat.titulo}</span>
-              <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
-            </button>
-            <div id="dropdown-${cat.id}" class="dropdown-menu absolute left-0 mt-1 w-56 bg-white text-gray-800 rounded-lg shadow-xl py-2 hidden border border-gray-100 z-50">
-              ${cat.itens.map(item => {
-                const clickHandler = item.acao ? `onclick="${item.acao}(); fecharTodosDropdowns(); return false;"` : `onclick="fecharTodosDropdowns();"`;
-                return `
-                  <a href="${item.url}" ${clickHandler} class="flex items-center px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">
-                    <i class="fa-solid ${item.icone || 'fa-link'} w-5 text-gray-400"></i> ${item.nome}
-                  </a>
-                `;
-              }).join('')}
-            </div>
-          `;
-        } else {
-          wrapper.innerHTML = `
-            <a href="#" class="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 text-gray-200 hover:text-white transition">
-              <i class="fa-solid ${cat.icone} text-emerald-400"></i>
-              <span>${cat.titulo}</span>
-            </a>
-          `;
-        }
-        navContainer.appendChild(wrapper);
-      });
-
-      renderizarListaConfig();
-    }
-
-    function toggleDropdown(event, catId) {
-      event.stopPropagation();
-      const dropdownAlvo = document.getElementById(`dropdown-${catId}`);
-      const estavaAberto = !dropdownAlvo.classList.contains('hidden');
-      fecharTodosDropdowns();
-      if (!estavaAberto) dropdownAlvo.classList.remove('hidden');
-    }
-
-    function fecharTodosDropdowns() {
-      document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('#mainNav')) fecharTodosDropdowns();
-    });
-
-    // Modais de Menu
-    function abrirModalMenu() { document.getElementById('modalMenu').classList.remove('hidden'); document.getElementById('modalMenu').classList.add('flex'); }
-    function fecharModalMenu() { document.getElementById('modalMenu').classList.add('hidden'); document.getElementById('modalMenu').classList.remove('flex'); }
-
-    function adicionarOpcaoMenu() {
-      const catId = document.getElementById('categoriaSelect').value;
-      const nome = document.getElementById('novoNomeItem').value.trim();
-      const url = document.getElementById('novoLinkItem').value.trim() || '#';
-
-      if (!nome) return alert('Informe o nome da opção.');
-
-      const categoria = estruturaMenu.find(c => c.id === catId);
-      if (categoria) {
-        categoria.itens.push({ nome, url, icone: 'fa-circle-dot' });
-        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
-        renderizarMenu();
-        document.getElementById('novoNomeItem').value = '';
-        document.getElementById('novoLinkItem').value = '';
-      }
-    }
-
-    function removerOpcaoMenu(catId, index) {
-      const categoria = estruturaMenu.find(c => c.id === catId);
-      if (categoria) {
-        categoria.itens.splice(index, 1);
-        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
-        renderizarMenu();
-      }
-    }
-
-    function restaurarMenuPadrao() {
-      if (confirm('Deseja restaurar o menu original?')) {
-        estruturaMenu = JSON.parse(JSON.stringify(menuPadrao));
-        localStorage.setItem('kullka_menu', JSON.stringify(estruturaMenu));
-        renderizarMenu();
-      }
-    }
-
-    function renderizarListaConfig() {
-      const container = document.getElementById('listaMenuConfig');
-      container.innerHTML = '';
-      estruturaMenu.forEach(cat => {
-        cat.itens.forEach((item, index) => {
-          const row = document.createElement('div');
-          row.className = 'flex justify-between items-center py-1.5 px-2 hover:bg-gray-50';
-          row.innerHTML = `
-            <div>
-              <span class="font-semibold text-slate-800">${item.nome}</span>
-              <span class="text-xs text-gray-400 block">${cat.titulo} &bull; ${item.url}</span>
-            </div>
-            ${item.acao ? '<span class="text-xs text-gray-400 font-semibold">(Sistema)</span>' : `
-              <button onclick="removerOpcaoMenu('${cat.id}', ${index})" class="text-red-500 hover:text-red-700 text-xs px-2 py-1">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            `}
-          `;
-          container.appendChild(row);
-        });
-      });
-    }
-
-    // --- CARREGAMENTO DINÂMICO DA TELA DE LAYOUT ---
-    let layoutEnderecos = JSON.parse(localStorage.getItem('kullka_layout')) || [
-      { id: 1, codigo: 'DOCA-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '', coluna: '', nivel: '' },
-      { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: '01', coluna: '01', nivel: '1' },
-      { id: 3, codigo: 'LOJA-SET01-C03-N2', zona: 'LOJA', subzona: 'Gôndolas', corredor: '03', coluna: '02', nivel: '2' }
-    ];
-
-    function carregarTelaLayout() {
-      const main = document.getElementById('conteudoPrincipal');
-      main.innerHTML = `
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-200 pb-4">
-          <div>
-            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <i class="fa-solid fa-map-location-dot text-emerald-600"></i> Gestão de Layout & Endereçamento Logístico
-            </h1>
-            <p class="text-gray-500 text-sm">Configure a localização física/lógica (Zonas, Corredores, Racks e Níveis) do seu armazém ou loja.</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="abrirModalLayout()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-              <i class="fa-solid fa-plus"></i> Nova Localização
-            </button>
-            <button onclick="gerarLocsLoteModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-              <i class="fa-solid fa-cubes-stacked"></i> Gerador em Lote
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center">
-          <div class="flex-1 min-w-[200px]">
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Filtrar por Zona</label>
-            <select id="filtroZona" onchange="filtrarEnderecos()" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
-              <option value="">Todas as Zonas</option>
-              <option value="DOCA">Doca</option>
-              <option value="DEP">Depósito</option>
-              <option value="LOJA">Loja / Salão</option>
-            </select>
-          </div>
-          <div class="flex-1 min-w-[200px]">
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Buscar Endereço (Código)</label>
-            <input type="text" id="filtroCodigo" oninput="filtrarEnderecos()" placeholder="Ex: DEP-COR01-C02-N3" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500">
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="font-bold text-slate-800 text-base">Estrutura de Armazenamento Cadastrada</h3>
-            <span id="totalEnderecos" class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">0 Endereços</span>
-          </div>
-          
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-slate-600 text-xs uppercase font-semibold border-b border-gray-200">
-                  <th class="py-3 px-4">Código / Tag</th>
-                  <th class="py-3 px-4">Zona Principal</th>
-                  <th class="py-3 px-4">Subzona</th>
-                  <th class="py-3 px-4">Corredor</th>
-                  <th class="py-3 px-4">Coluna / Prateleira</th>
-                  <th class="py-3 px-4">Nível / Altura</th>
-                  <th class="py-3 px-4 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaLayout" class="divide-y divide-gray-100 text-sm"></tbody>
-            </table>
-          </div>
-        </div>
-      `;
-      renderizarTabelaLayout();
-    }
-
-    function renderizarTabelaLayout(lista = layoutEnderecos) {
-      const tbody = document.getElementById('tabelaLayout');
-      const counter = document.getElementById('totalEnderecos');
-      if (!tbody) return;
-
+    // Renderiza a tabela
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      counter.innerText = `${lista.length} Endereços`;
 
-      if(lista.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Nenhum endereço logístico encontrado.</td></tr>`;
-        return;
-      }
-
-      lista.forEach(item => {
+      locationsList.forEach((item, index) => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition border-b border-gray-100';
+        
+        // Cor do Badge da Zona
+        let badgeClass = 'bg-secondary';
+        if (item.zona === 'DOCA') badgeClass = 'bg-warning text-dark';
+        if (item.zona === 'DEP') badgeClass = 'bg-primary';
+        if (item.zona === 'LOJA') badgeClass = 'bg-success';
+
         tr.innerHTML = `
-          <td class="py-3 px-4 font-bold text-slate-800 font-mono text-xs">
-            <span class="bg-slate-100 border border-slate-300 px-2 py-1 rounded">${item.codigo}</span>
-          </td>
-          <td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-semibold ${getBadgeZona(item.zona)}">${item.zona}</span></td>
-          <td class="py-3 px-4 text-gray-600 text-xs">${item.subzona || '-'}</td>
-          <td class="py-3 px-4 text-gray-600 text-xs">${item.corredor ? 'Corredor ' + item.corredor : '-'}</td>
-          <td class="py-3 px-4 text-gray-600 text-xs">${item.coluna ? 'Coluna ' + item.coluna : '-'}</td>
-          <td class="py-3 px-4 text-gray-600 text-xs">${item.nivel ? 'Nível ' + item.nivel : '-'}</td>
-          <td class="py-3 px-4 text-center">
-            <button onclick="excluirEndereco(${item.id})" class="text-red-500 hover:text-red-700 px-2 py-1">
-              <i class="fa-solid fa-trash"></i>
+          <td class="fw-bold">${item.codigo}</td>
+          <td><span class="badge ${badgeClass} badge-zona">${item.zona}</span></td>
+          <td>${item.subzona || '-'}</td>
+          <td>${item.corredor || '-'}</td>
+          <td>${item.coluna || '-'}</td>
+          <td>${item.nivel || '-'}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${index})" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteLocation(${index})" title="Excluir">
+              <i class="fas fa-trash"></i>
             </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+
+      document.getElementById('totalCount').innerText = `${locationsList.length} Endereços`;
     }
 
-    function getBadgeZona(zona) {
-      switch(zona) {
-        case 'DOCA': return 'bg-amber-100 text-amber-800 border border-amber-300';
-        case 'DEP': return 'bg-blue-100 text-blue-800 border border-blue-300';
-        case 'LOJA': return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-        default: return 'bg-gray-100 text-gray-800';
+    // Gerador automático de Tag/Código simples
+    function generateCode(zona, subzona, corredor, coluna, nivel) {
+      let code = zona;
+      if (corredor && corredor !== '-') code += `-${corredor.replace(/\s+/g, '').toUpperCase()}`;
+      if (coluna && coluna !== '-') code += `-${coluna.replace(/\s+/g, '').toUpperCase()}`;
+      if (nivel && nivel !== '-') code += `-${nivel.replace(/\s+/g, '').toUpperCase()}`;
+      if (code === zona && subzona) code += `-${subzona.substring(0, 3).toUpperCase()}-01`;
+      return code;
+    }
+
+    // Ação do Botão "Nova Localização"
+    document.getElementById('btnOpenNewModal').addEventListener('click', () => {
+      editIndex = null;
+      document.getElementById('formLocation').reset();
+      document.getElementById('modalLocationLabel').innerText = 'Nova Localização';
+      document.getElementById('btnSaveLocation').innerText = 'Salvar';
+      modalElement.show();
+    });
+
+    // Abrir Modal no Modo Edição
+    function openEditModal(index) {
+      editIndex = index;
+      const item = locationsList[index];
+
+      document.getElementById('selectZona').value = item.zona;
+      document.getElementById('inputSubzona').value = item.subzona !== '-' ? item.subzona : '';
+      document.getElementById('inputCorredor').value = item.corredor !== '-' ? item.corredor : '';
+      document.getElementById('inputColuna').value = item.coluna !== '-' ? item.coluna : '';
+      document.getElementById('inputNivel').value = item.nivel !== '-' ? item.nivel : '';
+
+      document.getElementById('modalLocationLabel').innerText = 'Editar Localização';
+      document.getElementById('btnSaveLocation').innerText = 'Atualizar';
+      modalElement.show();
+    }
+
+    // Salvar (Novo ou Edição)
+    document.getElementById('btnSaveLocation').addEventListener('click', () => {
+      const zona = document.getElementById('selectZona').value;
+      const subzona = document.getElementById('inputSubzona').value || '-';
+      const corredor = document.getElementById('inputCorredor').value || '-';
+      const coluna = document.getElementById('inputColuna').value || '-';
+      const nivel = document.getElementById('inputNivel').value || '-';
+      
+      const codigo = generateCode(zona, subzona, corredor, coluna, nivel);
+
+      const newItem = {
+        id: editIndex !== null ? locationsList[editIndex].id : Date.now(),
+        codigo: codigo,
+        zona: zona,
+        subzona: subzona,
+        corredor: corredor,
+        coluna: coluna,
+        nivel: nivel
+      };
+
+      if (editIndex !== null) {
+        locationsList[editIndex] = newItem;
+      } else {
+        locationsList.push(newItem);
+      }
+
+      renderTable();
+      modalElement.hide();
+    });
+
+    // Excluir registro
+    function deleteLocation(index) {
+      if (confirm('Tem certeza que deseja remover esta localização?')) {
+        locationsList.splice(index, 1);
+        renderTable();
       }
     }
 
-    function atualizarCodigoPreview() {
-      const zona = document.getElementById('endZona').value;
-      const sub = document.getElementById('endSubzona').value.trim();
-      const cor = document.getElementById('endCorredor').value.trim();
-      const col = document.getElementById('endColuna').value.trim();
-      const niv = document.getElementById('endNivel').value.trim();
-
-      let parts = [zona];
-      if (sub) parts.push(sub.toUpperCase().replace(/\s+/g, ''));
-      if (cor) parts.push(`C${cor}`);
-      if (col) parts.push(`COL${col}`);
-      if (niv) parts.push(`N${niv}`);
-
-      document.getElementById('previewCodigo').innerText = parts.join('-');
-    }
-
-    function abrirModalLayout() {
-      document.getElementById('formLayout').reset();
-      atualizarCodigoPreview();
-      document.getElementById('modalLayout').classList.remove('hidden');
-      document.getElementById('modalLayout').classList.add('flex');
-    }
-
-    function fecharModalLayout() {
-      document.getElementById('modalLayout').classList.add('hidden');
-      document.getElementById('modalLayout').classList.remove('flex');
-    }
-
-    function salvarEndereco(e) {
-      e.preventDefault();
-      const codigo = document.getElementById('previewCodigo').innerText;
-      const zona = document.getElementById('endZona').value;
-      const subzona = document.getElementById('endSubzona').value.trim();
-      const corredor = document.getElementById('endCorredor').value.trim();
-      const coluna = document.getElementById('endColuna').value.trim();
-      const nivel = document.getElementById('endNivel').value.trim();
-
-      const novo = { id: Date.now(), codigo, zona, subzona, corredor, coluna, nivel };
-      layoutEnderecos.push(novo);
-      salvarAtualizarLayout();
-      fecharModalLayout();
-    }
-
-    function excluirEndereco(id) {
-      if(confirm('Excluir este endereço do layout?')) {
-        layoutEnderecos = layoutEnderecos.filter(e => e.id !== id);
-        salvarAtualizarLayout();
-      }
-    }
-
-    function gerarLocsLoteModal() {
-      document.getElementById('modalLote').classList.remove('hidden');
-      document.getElementById('modalLote').classList.add('flex');
-    }
-
-    function fecharModalLote() {
-      document.getElementById('modalLote').classList.add('hidden');
-      document.getElementById('modalLote').classList.remove('flex');
-    }
-
-    function gerarLoteEnderecos(e) {
-      e.preventDefault();
-      const zona = document.getElementById('loteZona').value;
-      const numCor = parseInt(document.getElementById('loteCorredores').value);
-      const numCol = parseInt(document.getElementById('loteColunas').value);
-      const numNiv = parseInt(document.getElementById('loteNiveis').value);
-
-      for(let c = 1; c <= numCor; c++) {
-        for(let col = 1; col <= numCol; col++) {
-          for(let n = 1; n <= numNiv; n++) {
-            const corStr = String(c).padStart(2, '0');
-            const colStr = String(col).padStart(2, '0');
-            const cod = `${zona}-C${corStr}-COL${colStr}-N${n}`;
-            
-            if(!layoutEnderecos.some(item => item.codigo === cod)) {
-              layoutEnderecos.push({
-                id: Date.now() + Math.random(),
-                codigo: cod,
-                zona: zona,
-                subzona: 'Automático',
-                corredor: corStr,
-                coluna: colStr,
-                nivel: String(n)
-              });
-            }
-          }
-        }
-      }
-
-      salvarAtualizarLayout();
-      fecharModalLote();
-    }
-
-    function filtrarEnderecos() {
-      const z = document.getElementById('filtroZona').value.toUpperCase();
-      const cod = document.getElementById('filtroCodigo').value.toUpperCase().trim();
-
-      const resultado = layoutEnderecos.filter(item => {
-        const matchZona = !z || item.zona.includes(z);
-        const matchCod = !cod || item.codigo.includes(cod);
-        return matchZona && matchCod;
-      });
-
-      renderizarTabelaLayout(resultado);
-    }
-
-    function salvarAtualizarLayout() {
-      localStorage.setItem('kullka_layout', JSON.stringify(layoutEnderecos));
-      renderizarTabelaLayout();
-    }
-
-    // Inicialização do Menu
-    renderizarMenu();
+    // Inicialização
+    renderTable();
   </script>
 </body>
 </html>
