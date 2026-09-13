@@ -31,7 +31,7 @@
       <p class="text-sm text-gray-500 mb-4">Digite o código de barras para buscar no banco de dados.</p>
       
       <div class="flex gap-2">
-        <input type="text" id="gtinInput" placeholder="Ex: 7891234567890" class="flex-1 border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="gtinInput" placeholder="Ex: 8092556589346" class="flex-1 border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         <button onclick="buscarProduto()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition">Buscar</button>
       </div>
 
@@ -93,6 +93,7 @@
         .maybeSingle();
 
       if (error) {
+        console.error('Erro no Supabase:', error);
         resultadoDiv.innerHTML = `<p class="text-red-600 text-sm">Erro na consulta: ${error.message}</p>`;
       } else if (!data) {
         resultadoDiv.innerHTML = '<p class="text-gray-600 text-sm">Nenhum produto encontrado com este código.</p>';
