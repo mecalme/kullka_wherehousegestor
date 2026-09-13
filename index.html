@@ -1,106 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de Rampa e Estoque</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullka - Gestor de Armazém</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="container">
-        <h2>App de Rampa e Estoque</h2>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-        <!-- Seleção de Modos / Ações -->
-        <div class="actions">
-            <button onclick="setModo('recebimento')">1. Recebimento Rampa</button>
-            <button onclick="setModo('enderecar')">2. Endereçar Box</button>
-        </div>
+  <!-- Cabeçalho -->
+  <header class="bg-blue-700 text-white p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold">📦 Kullka WMS</h1>
+      <span class="text-sm bg-blue-800 px-3 py-1 rounded-full">Painel Principal</span>
+    </div>
+  </header>
 
-        <div id="modo-atual" style="text-align: center; margin-bottom: 10px; font-size: 14px; color: #666;">
-            Selecione um modo acima para começar
-        </div>
-
-        <!-- Área da Câmera / Leitor (EAN) -->
-        <div id="interactive" class="viewport"></div>
-
-        <!-- Painel de Revisão -->
-        <div id="painel-revisao" class="result-box" style="display: none;">
-            <h3>Revisão e Dados de Lote</h3>
-            
-            <p><b>EAN:</b> <span id="rev-ean">-</span></p>
-            
-            <div class="form-group">
-                <label>Nome do Produto / Peso:</label>
-                <input type="text" id="input-nome" placeholder="Digite o nome do produto...">
-            </div>
-
-            <!-- Campo Lote com Botão de Foto (OCR) -->
-            <div class="form-group">
-                <label>Lote:</label>
-                <div class="input-com-botao">
-                    <input type="text" id="input-lote" placeholder="Digite ou capture por foto">
-                    <button type="button" onclick="capturarTextoCamera('lote')" class="btn-escanear-parte" title="Fotografar Lote">📷</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Data de Fabricação (Opcional - DD/MM/AAAA):</label>
-                <input type="text" id="input-fabricacao" placeholder="DD/MM/AAAA" maxlength="10" oninput="mascaraData(this)">
-            </div>
-
-            <!-- Campo Validade com Botão de Foto (OCR) -->
-            <div class="form-group">
-                <label>Data de Validade (DD/MM/AAAA):</label>
-                <div class="input-com-botao">
-                    <input type="text" id="input-validade" placeholder="DD/MM/AAAA" maxlength="10" oninput="mascaraData(this)">
-                    <button type="button" onclick="capturarTextoCamera('validade')" class="btn-escanear-parte" title="Fotografar Validade">📷</button>
-                </div>
-            </div>
-
-            <!-- Botões de Ação com Espaçamento Adequado -->
-            <button onclick="cadastrarProdutoFinal()" class="btn-acao btn-salvar">
-                Confirmar e Cadastrar no Sistema
-            </button>
-            <button onclick="cancelarRevisao()" class="btn-acao btn-cancelar">
-                Cancelar / Ler Outro
-            </button>
-        </div>
-
-        <!-- Seção: Lista de Itens Cadastrados Localmente -->
-        <div class="secao-lista">
-            <div class="cabecalho-lista">
-                <h3>Histórico Local (Dispositivo)</h3>
-                <button onclick="limparBaseDados()" class="btn-limpar-todos">Limpar Tudo</button>
-            </div>
-            
-            <div class="table-responsive">
-                <table id="tabela-itens">
-                    <thead>
-                        <tr>
-                            <th>Modo</th>
-                            <th>Produto</th>
-                            <th>Lote</th>
-                            <th>Validade</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-corpo">
-                        <!-- Os itens cadastrados aparecem aqui dinamicamente -->
-                    </tbody>
-                </table>
-            </div>
-            <div id="mensagem-vazia" style="text-align: center; color: #777; padding: 15px; font-size: 13px;">
-                Nenhum item cadastrado ainda.
-            </div>
-        </div>
+  <!-- Conteúdo Principal -->
+  <main class="container mx-auto mt-8 p-4">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold mb-2">Gestão de Armazém Descomplicada</h2>
+      <p class="text-gray-600">Selecione uma das opções abaixo para iniciar o gerenciamento.</p>
     </div>
 
-    <!-- Input oculto para abrir a câmera nativa do celular focada em foto -->
-    <input type="file" id="input-camera-ocr" accept="image/*" capture="environment" style="display:none;" onchange="processarFotoOCR(event)">
+    <!-- Cards de Acesso Rápido -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Card 1: Estoque -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition">
+        <div class="text-blue-600 text-3xl mb-3">🏷️</div>
+        <h3 class="text-xl font-semibold mb-2">Cadastro de Produtos</h3>
+        <p class="text-gray-500 text-sm mb-4">Consulte, adicione ou edite os itens do seu catálogo.</p>
+        <button class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">Acessar Produtos</button>
+      </div>
 
-    <!-- Bibliotecas: QuaggaJS (Código de Barras) e Tesseract.js (OCR de Texto) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
-    <script src="app.js"></script>
+      <!-- Card 2: Entradas / Saídas -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition">
+        <div class="text-green-600 text-3xl mb-3">🔄</div>
+        <h3 class="text-xl font-semibold mb-2">Movimentações</h3>
+        <p class="text-gray-500 text-sm mb-4">Registre entradas de lote, separação e baixa de mercadorias.</p>
+        <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition">Nova Movimentação</button>
+      </div>
+
+      <!-- Card 3: Localizações -->
+      <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition">
+        <div class="text-orange-600 text-3xl mb-3">📍</div>
+        <h3 class="text-xl font-semibold mb-2">Mapa do Armazém</h3>
+        <p class="text-gray-500 text-sm mb-4">Gerencie ruas, prateleiras e posições de alocação.</p>
+        <button class="w-full bg-orange-600 text-white py-2 rounded-lg font-medium hover:bg-orange-700 transition">Ver Posições</button>
+      </div>
+
+    </div>
+  </main>
+
 </body>
 </html>
