@@ -193,6 +193,7 @@
         itens: [
           { nome: 'Cadastro de Produtos', url: '#', icone: 'fa-tags' },
           { nome: 'Layout', url: '#', icone: 'fa-map-location-dot', acao: 'carregarTelaLayout' },
+          { nome: 'Editar Layout', url: '#', icone: 'fa-pen-to-square', acao: 'carregarTelaLayout' },
           { nome: 'Gerenciar Menu', url: '#', icone: 'fa-sliders', acao: 'abrirModalMenu' }
         ]
       },
@@ -335,6 +336,8 @@
       { id: 3, codigo: 'LOJA-SET01-C03-N2', zona: 'LOJA', subzona: 'Gôndolas', corredor: '03', coluna: '02', nivel: '2' }
     ];
 
+    let idEnderecoEdicao = null; // Controla edição individual de endereços
+
     function carregarTelaLayout() {
       const main = document.getElementById('conteudoPrincipal');
       main.innerHTML = `
@@ -423,8 +426,11 @@
           <td class="py-3 px-4 text-gray-600 text-xs">${item.corredor ? 'Corredor ' + item.corredor : '-'}</td>
           <td class="py-3 px-4 text-gray-600 text-xs">${item.coluna ? 'Coluna ' + item.coluna : '-'}</td>
           <td class="py-3 px-4 text-gray-600 text-xs">${item.nivel ? 'Nível ' + item.nivel : '-'}</td>
-          <td class="py-3 px-4 text-center">
-            <button onclick="excluirEndereco(${item.id})" class="text-red-500 hover:text-red-700 px-2 py-1">
+          <td class="py-3 px-4 text-center flex justify-center gap-1">
+            <button onclick="abrirModalEdicaoLayout(${item.id})" class="text-blue-500 hover:text-blue-700 px-2 py-1" title="Editar Layout">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="excluirEndereco(${item.id})" class="text-red-500 hover:text-red-700 px-2 py-1" title="Excluir Layout">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -459,13 +465,31 @@
     }
 
     function abrirModalLayout() {
+      idEnderecoEdicao = null;
       document.getElementById('formLayout').reset();
       atualizarCodigoPreview();
       document.getElementById('modalLayout').classList.remove('hidden');
       document.getElementById('modalLayout').classList.add('flex');
     }
 
+    function abrirModalEdicaoLayout(id) {
+      const item = layoutEnderecos.find(e => e.id === id);
+      if (!item) return;
+
+      idEnderecoEdicao = id;
+      document.getElementById('endZona').value = item.zona || 'DEP';
+      document.getElementById('endSubzona').value = item.subzona || '';
+      document.getElementById('endCorredor').value = item.corredor || '';
+      document.getElementById('endColuna').value = item.coluna || '';
+      document.getElementById('endNivel').value = item.nivel || '';
+
+      atualizarCodigoPreview();
+      document.getElementById('modalLayout').classList.remove('hidden');
+      document.getElementById('modalLayout').classList.add('flex');
+    }
+
     function fecharModalLayout() {
+      idEnderecoEdicao = null;
       document.getElementById('modalLayout').classList.add('hidden');
       document.getElementById('modalLayout').classList.remove('flex');
     }
@@ -479,8 +503,16 @@
       const coluna = document.getElementById('endColuna').value.trim();
       const nivel = document.getElementById('endNivel').value.trim();
 
-      const novo = { id: Date.now(), codigo, zona, subzona, corredor, coluna, nivel };
-      layoutEnderecos.push(novo);
+      if (idEnderecoEdicao) {
+        const index = layoutEnderecos.findIndex(e => e.id === idEnderecoEdicao);
+        if (index !== -1) {
+          layoutEnderecos[index] = { id: idEnderecoEdicao, codigo, zona, subzona, corredor, coluna, nivel };
+        }
+      } else {
+        const novo = { id: Date.now(), codigo, zona, subzona, corredor, coluna, nivel };
+        layoutEnderecos.push(novo);
+      }
+
       salvarAtualizarLayout();
       fecharModalLayout();
     }
