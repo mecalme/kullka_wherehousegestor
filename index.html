@@ -1,274 +1,319 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kullka - Supply Chain Manager</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- SDK Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullka - Supply Chain Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SDK Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
-  <!-- Header / Navegação Principal -->
-  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
-    <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
-      
-      <!-- Logotipo Kullka -->
-      <a href="index.html" class="flex items-center space-x-3 group">
-        <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
-          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18" opacity="0.9" />
-            <path d="M5 21V10l7-5 7 5v11" />
-            <path d="M9 14h6" />
-            <path d="M9 18h6" />
-            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-xl font-extrabold tracking-wide text-white block leading-tight">KULLKA</span>
-          <span class="text-xs text-emerald-400 font-semibold tracking-wider uppercase block">Supply Chain Manager</span>
-        </div>
-      </a>
+    <!-- Header / Navegação Principal -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            
+            <!-- Logotipo Kullka -->
+            <a href="index.html" class="flex items-center space-x-3 group">
+                <div class="bg-emerald-600 group-hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow-md transition flex items-center justify-center">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 21h18" opacity="0.9" />
+                        <path d="M5 21V10l7-5 7 5v11" />
+                        <path d="M9 14h6" />
+                        <path d="M9 18h6" />
+                        <circle cx="12" cy="7.5" r="1" fill="currentColor" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-wide text-white block leading-tight">KULLKA</span>
+                    <span class="text-xs text-emerald-400 font-semibold tracking-wider uppercase block">Supply Chain Manager</span>
+                </div>
+            </a>
 
-      <!-- Menu Principal / Submenus -->
-      <nav class="flex items-center space-x-2 mt-3 sm:mt-0">
-        <a href="index.html" class="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white flex items-center gap-2 shadow-sm">
-          <i class="fa-solid fa-sitemap"></i> Layout
-        </a>
-        <a href="produtos.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-gray-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-2">
-          <i class="fa-solid fa-boxes-stacked"></i> Produtos
-        </a>
-      </nav>
+            <!-- Menu de Modulos Principais -->
+            <nav class="flex items-center space-x-2 mt-3 sm:mt-0">
+                <a href="index.html" class="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-sitemap"></i> Layout
+                </a>
+                <a href="produtos.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-gray-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked"></i> Produtos
+                </a>
+            </nav>
 
+        </div>
+    </header>
+
+    <!-- Submenu / Abas de Navegação Interna -->
+    <div class="bg-slate-800 border-b border-slate-700 shadow-inner">
+        <div class="container mx-auto px-4">
+            <nav class="flex space-x-4 overflow-x-auto py-2">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </button>
+                <button onclick="switchTab('estrutura')" id="tab-estrutura" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group"></i> Estrutura Cadastrada
+                </button>
+                <button onclick="switchTab('corredores')" id="tab-corredores" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-route"></i> Corredores & Ruas
+                </button>
+                <button onclick="switchTab('lotes')" id="tab-lotes" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-cubes-stacked"></i> Gerador em Lote
+                </button>
+            </nav>
+        </div>
     </div>
-  </header>
 
-  <!-- Conteúdo Principal -->
-  <main class="container mx-auto px-4 py-8 flex-grow">
-    
-    <!-- Título da Página e Ações Gerais -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-sitemap text-emerald-600"></i> Gestão de Layout & Endereçamento Logístico
-        </h1>
-        <p class="text-sm text-gray-500">Configure a localização física e lógica do seu armazém ou loja.</p>
-      </div>
-      <div>
-        <button id="btnOpenModal" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow flex items-center gap-2 transition">
-          <i class="fa-solid fa-plus"></i> Nova Localização
-        </button>
-      </div>
+    <!-- Conteúdo Principal -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        
+        <!-- Seção: Estrutura Cadastrada -->
+        <section id="sec-estrutura">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-emerald-600"></i> Gestão de Layout & Endereçamento Logístico
+                    </h1>
+                    <p class="text-sm text-gray-500">Configure a localização física e lógica do seu armazém ou loja.</p>
+                </div>
+                <div>
+                    <button id="btnOpenModal" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow flex items-center gap-2 transition">
+                        <i class="fa-solid fa-plus"></i> Nova Localização
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabela de Estruturas Cadastradas -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                    <h2 class="font-bold text-slate-700">Estrutura de Armazenamento Cadastrada</h2>
+                    <span id="totalCount" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">0 Endereços</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-600">
+                        <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+                            <tr>
+                                <th class="p-3">CÓDIGO / TAG</th>
+                                <th class="p-3">ZONA PRINCIPAL</th>
+                                <th class="p-3">SUBZONA</th>
+                                <th class="p-3">CORREDOR</th>
+                                <th class="p-3">COLUNA</th>
+                                <th class="p-3">NÍVEL</th>
+                                <th class="p-3 text-center">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-200">
+                            <!-- Preenchido via Javascript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seções Complementares (Menu mantido intacto) -->
+        <section id="sec-dashboard" class="hidden text-center py-12 text-gray-500">
+            <i class="fa-solid fa-chart-line text-4xl mb-2 text-slate-400"></i>
+            <p>Painel de Indicadores e Estatísticas de Armazenamento.</p>
+        </section>
+
+        <section id="sec-corredores" class="hidden text-center py-12 text-gray-500">
+            <i class="fa-solid fa-route text-4xl mb-2 text-slate-400"></i>
+            <p>Mapeamento de Corredores e Sentidos de Tráfego.</p>
+        </section>
+
+        <section id="sec-lotes" class="hidden text-center py-12 text-gray-500">
+            <i class="fa-solid fa-cubes-stacked text-4xl mb-2 text-slate-400"></i>
+            <p>Geração Sequencial de Endereços em Lote.</p>
+        </section>
+
+    </main>
+
+    <!-- Modal para Criar / Editar Localização -->
+    <div id="modalLocation" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+            
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-lg">Nova Localização</h3>
+                <button id="btnCloseModal" class="text-gray-400 hover:text-white text-xl">&times;</button>
+            </div>
+
+            <form id="formLocation" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Zona Principal</label>
+                    <select id="selectZona" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-emerald-500" required>
+                        <option value="">Selecione...</option>
+                        <option value="DOCA">DOCA</option>
+                        <option value="DEP">DEP (Depósito)</option>
+                        <option value="LOJA">LOJA</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Subzona</label>
+                    <input type="text" id="inputSubzona" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: Paletes, Recebimento">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Corredor</label>
+                        <input type="text" id="inputCorredor" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 01">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Coluna</label>
+                        <input type="text" id="inputColuna" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 01">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Nível</label>
+                        <input type="text" id="inputNivel" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 1">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t">
+                    <button type="button" id="btnCancelModal" class="px-4 py-2 border rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" id="btnSaveLocation" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Tabela de Estruturas Cadastradas -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-        <h2 class="font-bold text-slate-700">Estrutura de Armazenamento Cadastrada</h2>
-        <span id="totalCount" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">0 Endereços</span>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-gray-600">
-          <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-            <tr>
-              <th class="p-3">CÓDIGO / TAG</th>
-              <th class="p-3">ZONA PRINCIPAL</th>
-              <th class="p-3">SUBZONA</th>
-              <th class="p-3">CORREDOR</th>
-              <th class="p-3">COLUNA</th>
-              <th class="p-3">NÍVEL</th>
-              <th class="p-3 text-center">AÇÕES</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class="divide-y divide-gray-200">
-            <!-- Os itens serão carregados dinamicamente via JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
+    <!-- Lógica JavaScript -->
+    <script>
+        let locationsList = [
+            { id: 1, codigo: 'DOCA-REC-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '-', coluna: '-', nivel: '-' },
+            { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: '01', coluna: '01', nivel: '1' }
+        ];
 
-  <!-- Modal para Criar / Editar Localização -->
-  <div id="modalLocation" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-      
-      <!-- Cabeçalho do Modal -->
-      <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
-        <h3 id="modalTitle" class="font-bold text-lg">Nova Localização</h3>
-        <button id="btnCloseModal" class="text-gray-400 hover:text-white text-xl">&times;</button>
-      </div>
+        let editIndex = null;
 
-      <!-- Formulário do Modal -->
-      <form id="formLocation" class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Zona Principal</label>
-          <select id="selectZona" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-emerald-500" required>
-            <option value="">Selecione...</option>
-            <option value="DOCA">DOCA</option>
-            <option value="DEP">DEP (Depósito)</option>
-            <option value="LOJA">LOJA</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Subzona</label>
-          <input type="text" id="inputSubzona" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: Paletes, Recebimento">
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Corredor</label>
-            <input type="text" id="inputCorredor" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 01">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Coluna</label>
-            <input type="text" id="inputColuna" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 01">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Nível</label>
-            <input type="text" id="inputNivel" class="w-full p-2.5 border rounded-lg bg-gray-50 text-sm" placeholder="Ex: 1">
-          </div>
-        </div>
+        const modal = document.getElementById('modalLocation');
+        const form = document.getElementById('formLocation');
+        const modalTitle = document.getElementById('modalTitle');
 
-        <!-- Botões de Ação do Modal -->
-        <div class="flex justify-end gap-2 pt-4 border-t">
-          <button type="button" id="btnCancelModal" class="px-4 py-2 border rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100">Cancelar</button>
-          <button type="submit" id="btnSaveLocation" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
+        // Alternar abas do menu secundário
+        function switchTab(tabName) {
+            const tabs = ['dashboard', 'estrutura', 'corredores', 'lotes'];
+            tabs.forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}`);
+                btn.className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2";
+            });
 
-  <!-- Lógica JavaScript -->
-  <script>
-    // Lista de localizações pré-cadastradas
-    let locationsList = [
-      { id: 1, codigo: 'DOCA-REC-01', zona: 'DOCA', subzona: 'Recebimento', corredor: '-', coluna: '-', nivel: '-' },
-      { id: 2, codigo: 'DEP-C01-COL01-N1', zona: 'DEP', subzona: 'Paletes', corredor: '01', coluna: '01', nivel: '1' }
-    ];
+            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 text-white flex items-center gap-2";
+        }
 
-    let editIndex = null; // Guarda o índice do item sendo editado
+        // Renderização da tabela
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
 
-    const modal = document.getElementById('modalLocation');
-    const form = document.getElementById('formLocation');
-    const modalTitle = document.getElementById('modalTitle');
+            locationsList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 border-b border-gray-100";
 
-    // Função para renderizar a tabela
-    function renderTable() {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${item.codigo}</td>
+                    <td class="p-3"><span class="px-2 py-1 text-xs rounded font-bold bg-slate-100 text-slate-700">${item.zona}</span></td>
+                    <td class="p-3">${item.subzona || '-'}</td>
+                    <td class="p-3">${item.corredor || '-'}</td>
+                    <td class="p-3">${item.coluna || '-'}</td>
+                    <td class="p-3">${item.nivel || '-'}</td>
+                    <td class="p-3 text-center space-x-1">
+                        <button onclick="editLocation(${index})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteLocation(${index})" class="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-      locationsList.forEach((item, index) => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-gray-50 border-b border-gray-100";
+            document.getElementById('totalCount').innerText = `${locationsList.length} Endereços`;
+        }
 
-        tr.innerHTML = `
-          <td class="p-3 font-semibold text-slate-800">${item.codigo}</td>
-          <td class="p-3"><span class="px-2 py-1 text-xs rounded font-bold bg-slate-100 text-slate-700">${item.zona}</span></td>
-          <td class="p-3">${item.subzona || '-'}</td>
-          <td class="p-3">${item.corredor || '-'}</td>
-          <td class="p-3">${item.coluna || '-'}</td>
-          <td class="p-3">${item.nivel || '-'}</td>
-          <td class="p-3 text-center space-x-1">
-            <button onclick="editLocation(${index})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Editar">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="deleteLocation(${index})" class="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Excluir">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+        // Controle do Modal
+        function openModal(isEdit = false) {
+            modal.classList.remove('hidden');
+            if (!isEdit) {
+                editIndex = null;
+                form.reset();
+                modalTitle.innerText = "Nova Localização";
+            } else {
+                modalTitle.innerText = "Editar Localização";
+            }
+        }
 
-      document.getElementById('totalCount').innerText = `${locationsList.length} Endereços`;
-    }
+        function closeModal() {
+            modal.classList.add('hidden');
+            editIndex = null;
+            form.reset();
+        }
 
-    // Modal Control
-    function openModal(isEdit = false) {
-      modal.classList.remove('hidden');
-      if (!isEdit) {
-        editIndex = null;
-        form.reset();
-        modalTitle.innerText = "Nova Localização";
-      } else {
-        modalTitle.innerText = "Editar Localização";
-      }
-    }
+        // Ação de Edição
+        window.editLocation = function(index) {
+            editIndex = index;
+            const item = locationsList[index];
 
-    function closeModal() {
-      modal.classList.add('hidden');
-      editIndex = null;
-      form.reset();
-    }
+            document.getElementById('selectZona').value = item.zona;
+            document.getElementById('inputSubzona').value = item.subzona !== '-' ? item.subzona : '';
+            document.getElementById('inputCorredor').value = item.corredor !== '-' ? item.corredor : '';
+            document.getElementById('inputColuna').value = item.coluna !== '-' ? item.coluna : '';
+            document.getElementById('inputNivel').value = item.nivel !== '-' ? item.nivel : '';
 
-    // Função para carregar os dados no formulário e abrir no modo EDIÇÃO
-    window.editLocation = function(index) {
-      editIndex = index;
-      const item = locationsList[index];
+            openModal(true);
+        };
 
-      document.getElementById('selectZona').value = item.zona;
-      document.getElementById('inputSubzona').value = item.subzona !== '-' ? item.subzona : '';
-      document.getElementById('inputCorredor').value = item.corredor !== '-' ? item.corredor : '';
-      document.getElementById('inputColuna').value = item.coluna !== '-' ? item.coluna : '';
-      document.getElementById('inputNivel').value = item.nivel !== '-' ? item.nivel : '';
+        // Exclusão
+        window.deleteLocation = function(index) {
+            if (confirm('Deseja excluir esta localização?')) {
+                locationsList.splice(index, 1);
+                renderTable();
+            }
+        };
 
-      openModal(true);
-    };
+        // Salvar
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-    // Função para excluir localização
-    window.deleteLocation = function(index) {
-      if (confirm('Tem certeza que deseja remover esta localização?')) {
-        locationsList.splice(index, 1);
+            const zona = document.getElementById('selectZona').value;
+            const subzona = document.getElementById('inputSubzona').value || '-';
+            const corredor = document.getElementById('inputCorredor').value || '-';
+            const coluna = document.getElementById('inputColuna').value || '-';
+            const nivel = document.getElementById('inputNivel').value || '-';
+
+            let codigo = zona;
+            if (corredor !== '-') codigo += `-C${corredor}`;
+            if (coluna !== '-') codigo += `-COL${coluna}`;
+            if (nivel !== '-') codigo += `-N${nivel}`;
+
+            const itemData = {
+                id: editIndex !== null ? locationsList[editIndex].id : Date.now(),
+                codigo,
+                zona,
+                subzona,
+                corredor,
+                coluna,
+                nivel
+            };
+
+            if (editIndex !== null) {
+                locationsList[editIndex] = itemData;
+            } else {
+                locationsList.push(itemData);
+            }
+
+            renderTable();
+            closeModal();
+        });
+
+        document.getElementById('btnOpenModal').addEventListener('click', () => openModal(false));
+        document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+        document.getElementById('btnCancelModal').addEventListener('click', closeModal);
+
         renderTable();
-      }
-    };
-
-    // Processamento ao salvar formulário (Cadastro ou Atualização)
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const zona = document.getElementById('selectZona').value;
-      const subzona = document.getElementById('inputSubzona').value || '-';
-      const corredor = document.getElementById('inputCorredor').value || '-';
-      const coluna = document.getElementById('inputColuna').value || '-';
-      const nivel = document.getElementById('inputNivel').value || '-';
-
-      // Gera código formatado para visualização
-      let codigo = zona;
-      if (corredor !== '-') codigo += `-C${corredor}`;
-      if (coluna !== '-') codigo += `-COL${coluna}`;
-      if (nivel !== '-') codigo += `-N${nivel}`;
-
-      const itemData = {
-        id: editIndex !== null ? locationsList[editIndex].id : Date.now(),
-        codigo,
-        zona,
-        subzona,
-        corredor,
-        coluna,
-        nivel
-      };
-
-      if (editIndex !== null) {
-        locationsList[editIndex] = itemData; // Atualiza item existente
-      } else {
-        locationsList.push(itemData); // Insere novo item
-      }
-
-      renderTable();
-      closeModal();
-    });
-
-    // Listeners dos Botões
-    document.getElementById('btnOpenModal').addEventListener('click', () => openModal(false));
-    document.getElementById('btnCloseModal').addEventListener('click', closeModal);
-    document.getElementById('btnCancelModal').addEventListener('click', closeModal);
-
-    // Inicialização da Tabela
-    renderTable();
-  </script>
+    </script>
 </body>
 </html>
