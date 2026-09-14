@@ -143,219 +143,217 @@
     </div>
   </div>
 
-  <script>
-    
-    // 1. INICIALIZAÇÃO DO SUPABASE
-    const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v'; // Coloque a sua chave public/anon do Supabase
+ <script>
+  // 1. INICIALIZAÇÃO SEGURA DO SUPABASE
+  const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
+  const SUPABASE_KEY = 'SUA_CHAVE_ANON_PUBLIC_AQUI'; // Insira a sua chave Publishable/Anon aqui
 
-    // Define o cliente globalmente para as páginas dinâmicas consultarem
-    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // 2. CÓDIGO DA APLICAÇÃO (MANTIDO)
-    const STORAGE_KEY = 'kullka_paginas_app';
-
-    const categoriasConfig = [
-      { nome: 'Manutenção', icone: 'fa-wrench' },
-      { nome: 'Gestão Operacional', icone: 'fa-boxes-packing' },
-      { nome: 'Finanças', icone: 'fa-wallet' },
-      { nome: 'Relatórios', icone: 'fa-chart-line' }
-    ];   
-    
-    
-    const STORAGE_KEY = 'kullka_paginas_app';
-
-    const categoriasConfig = [
-      { nome: 'Manutenção', icone: 'fa-wrench' },
-      { nome: 'Gestão Operacional', icone: 'fa-boxes-packing' },
-      { nome: 'Finanças', icone: 'fa-wallet' },
-      { nome: 'Relatórios', icone: 'fa-chart-line' }
-    ];
-
-    const paginasIniciais = [
-      { slug: 'cadastro-produtos', titulo: 'Cadastro de Produtos', categoria: 'Manutenção', icone: 'fa-tags', conteudo: '<p>Tela de cadastro de produtos.</p>' },
-      { slug: 'layout', titulo: 'Layout', categoria: 'Manutenção', icone: 'fa-map-location-dot', conteudo: '<p>Visão do Layout do Armazém.</p>' },
-      { slug: 'editar-layout', titulo: 'Editar Layout', categoria: 'Manutenção', icone: 'fa-pen-to-square', conteudo: '<p>Editor visual de Layout.</p>' }
-    ];
-
-    function obterPaginas() {
-      const salvas = localStorage.getItem(STORAGE_KEY);
-      if (!salvas) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(paginasIniciais));
-        return paginasIniciais;
-      }
-      return JSON.parse(salvas);
+  try {
+    if (typeof supabase !== 'undefined' && SUPABASE_KEY !== 'SUA_CHAVE_ANON_PUBLIC_AQUI') {
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+      console.warn('Supabase não inicializado: Chave pendente ou biblioteca não carregada.');
     }
+  } catch (e) {
+    console.error('Erro ao conectar com Supabase:', e);
+  }
 
-    function salvarListaPaginas(lista) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-      atualizarMenuEPaginas();
+  // 2. ESTRUTURA E GERENCIAMENTO DE PÁGINAS
+  const STORAGE_KEY = 'kullka_paginas_app';
+
+  const categoriasConfig = [
+    { nome: 'Manutenção', icone: 'fa-wrench' },
+    { nome: 'Gestão Operacional', icone: 'fa-boxes-packing' },
+    { nome: 'Finanças', icone: 'fa-wallet' },
+    { nome: 'Relatórios', icone: 'fa-chart-line' }
+  ];
+
+  function carregarPaginas() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (e) {
+      return [];
     }
+  }
 
-    function renderizarMenuDinamico() {
-      const mainNav = document.getElementById('mainNav');
-      if (!mainNav) return;
-      mainNav.innerHTML = '';
+  function salvarPaginasStorage(paginas) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(paginas));
+  }
 
-      const paginas = obterPaginas();
+  function renderizarMenu() {
+    const nav = document.getElementById('mainNav');
+    if (!nav) return;
 
-      categoriasConfig.forEach(cat => {
-        const paginasCategoria = paginas.filter(p => p.categoria === cat.nome);
-        
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'relative group';
+    const paginas = carregarPaginas();
+    nav.innerHTML = '';
 
-        const button = document.createElement('button');
-        button.className = 'flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors';
-        button.innerHTML = `
-          <i class="fa-solid ${cat.icone} text-emerald-400"></i>
+    categoriasConfig.forEach(cat => {
+      const paginasDaCat = paginas.filter(p => p.categoria === cat.nome);
+      if (paginasDaCat.length === 0) return;
+
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'relative group';
+
+      let itemsHtml = '';
+      paginasDaCat.forEach(p => {
+        itemsHtml += `
+          <button onclick="carregarPagina('${p.slug}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 transition">
+            <i class="fa-solid ${p.icone || 'fa-file'} w-4 text-center"></i>
+            <span>${p.titulo}</span>
+          </button>
+        `;
+      });
+
+      groupDiv.innerHTML = `
+        <button class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-emerald-600 transition">
+          <i class="fa-solid ${cat.icone}"></i>
           <span>${cat.nome}</span>
-          <i class="fa-solid fa-chevron-down text-xs opacity-50"></i>
-        `;
+          <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-60"></i>
+        </button>
+        <div class="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 hidden group-hover:block z-50">
+          ${itemsHtml}
+        </div>
+      `;
 
-        const dropdown = document.createElement('div');
-        dropdown.className = 'hidden group-hover:block absolute left-0 mt-0 w-56 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl py-2 z-50';
-
-        if (paginasCategoria.length === 0) {
-          dropdown.innerHTML = '<span class="block px-4 py-2 text-xs text-slate-500">Nenhuma página</span>';
-        } else {
-          paginasCategoria.forEach(pag => {
-            const item = document.createElement('a');
-            item.href = `#${pag.slug}`;
-            item.className = 'flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer';
-            item.innerHTML = `<i class="fa-solid ${pag.icone || 'fa-file'} text-emerald-400 w-4"></i> <span>${pag.titulo}</span>`;
-            
-            item.addEventListener('click', (e) => {
-              e.preventDefault();
-              navegarPara(pag.slug);
-            });
-
-            dropdown.appendChild(item);
-          });
-        }
-
-        groupDiv.appendChild(button);
-        groupDiv.appendChild(dropdown);
-        mainNav.appendChild(groupDiv);
-      });
-    }
-
-    function abrirGerenciadorPaginas() {
-      document.getElementById('modal-gestao-paginas').classList.remove('hidden');
-      renderizarTabelaGerenciador();
-    }
-
-    function fecharGerenciadorPaginas() {
-      document.getElementById('modal-gestao-paginas').classList.add('hidden');
-      limparFormularioPagina();
-    }
-
-    function renderizarTabelaGerenciador() {
-      const tbody = document.getElementById('tabela-paginas-body');
-      tbody.innerHTML = '';
-
-      const paginas = obterPaginas();
-
-      if (paginas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400 text-xs">Nenhuma página cadastrada.</td></tr>';
-        return;
-      }
-
-      paginas.forEach(pag => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-gray-50 transition-colors';
-        tr.innerHTML = `
-          <td class="p-3 font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fa-solid ${pag.icone || 'fa-file'} text-emerald-600"></i>
-            <span>${pag.titulo}</span>
-          </td>
-          <td class="p-3 text-gray-500">${pag.categoria}</td>
-          <td class="p-3 text-right space-x-2">
-            <button onclick="editarPagina('${pag.slug}')" class="text-blue-600 hover:text-blue-800 p-1 transition-colors" title="Editar">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button onclick="excluirPagina('${pag.slug}')" class="text-rose-600 hover:text-rose-800 p-1 transition-colors" title="Excluir">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function salvarPagina(e) {
-      e.preventDefault();
-
-      const slugOriginal = document.getElementById('page-slug-original').value;
-      const titulo = document.getElementById('page-titulo').value.trim();
-      const categoria = document.getElementById('page-categoria').value;
-      const icone = document.getElementById('page-icone').value.trim() || 'fa-file';
-      const slug = document.getElementById('page-slug').value.trim().toLowerCase().replace(/\s+/g, '-');
-      const conteudo = document.getElementById('page-conteudo').value;
-
-      let paginas = obterPaginas();
-
-      if (slugOriginal) {
-        paginas = paginas.map(p => p.slug === slugOriginal ? { slug, titulo, categoria, icone, conteudo } : p);
-      } else {
-        if (paginas.some(p => p.slug === slug)) {
-          alert('Já existe uma página com este Identificador (Slug). Use outro.');
-          return;
-        }
-        paginas.push({ slug, titulo, categoria, icone, conteudo });
-      }
-
-      salvarListaPaginas(paginas);
-      limparFormularioPagina();
-      renderizarTabelaGerenciador();
-    }
-
-    function editarPagina(slug) {
-      const paginas = obterPaginas();
-      const pag = paginas.find(p => p.slug === slug);
-      if (!pag) return;
-
-      document.getElementById('page-slug-original').value = pag.slug;
-      document.getElementById('page-titulo').value = pag.titulo;
-      document.getElementById('page-categoria').value = pag.categoria;
-      document.getElementById('page-icone').value = pag.icone;
-      document.getElementById('page-slug').value = pag.slug;
-      document.getElementById('page-conteudo').value = pag.conteudo || '';
-    }
-
-    function excluirPagina(slug) {
-      if (!confirm(`Tem certeza que deseja excluir a página "${slug}"?`)) return;
-
-      let paginas = obterPaginas();
-      paginas = paginas.filter(p => p.slug !== slug);
-      
-      salvarListaPaginas(paginas);
-      renderizarTabelaGerenciador();
-    }
-
-    function limparFormularioPagina() {
-      document.getElementById('form-pagina').reset();
-      document.getElementById('page-slug-original').value = '';
-    }
-
-    function navegarPara(slug) {
-      const paginas = obterPaginas();
-      const pag = paginas.find(p => p.slug === slug);
-
-      if (pag) {
-        document.getElementById('view-titulo').innerText = pag.titulo;
-        document.getElementById('view-descricao').innerText = `Categoria: ${pag.categoria}`;
-        document.getElementById('view-corpo').innerHTML = pag.conteudo || '<p class="text-gray-400">Página sem conteúdo.</p>';
-      }
-    }
-
-    function atualizarMenuEPaginas() {
-      renderizarMenuDinamico();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      atualizarMenuEPaginas();
+      nav.appendChild(groupDiv);
     });
-  </script>
+  }
+
+  function carregarPagina(slug) {
+    const paginas = carregarPaginas();
+    const pag = paginas.find(p => p.slug === slug);
+    const corpo = document.getElementById('view-corpo');
+
+    if (!corpo) return;
+
+    if (!pag) {
+      corpo.innerHTML = '<div class="p-4 text-rose-500 font-semibold">Página não encontrada.</div>';
+      return;
+    }
+
+    corpo.innerHTML = pag.conteudo;
+
+    // Executa os scripts contidos no conteúdo HTML carregado
+    const scripts = corpo.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      try {
+        eval(scripts[i].innerText);
+      } catch (err) {
+        console.error('Erro no script da página dinâmica:', err);
+      }
+    }
+  }
+
+  function abrirModal() {
+    const modal = document.getElementById('modalGestao');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      renderizarListaPaginas();
+    }
+  }
+
+  function fecharModal() {
+    const modal = document.getElementById('modalGestao');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  function salvarPagina() {
+    const titulo = document.getElementById('pag-titulo').value.trim();
+    const categoria = document.getElementById('pag-categoria').value;
+    const icone = document.getElementById('pag-icone').value.trim();
+    const slug = document.getElementById('pag-slug').value.trim();
+    const conteudo = document.getElementById('pag-conteudo').value;
+
+    if (!titulo || !slug) {
+      alert('Preencha ao menos o Título e o Identificador (Slug).');
+      return;
+    }
+
+    let paginas = carregarPaginas();
+    const index = paginas.findIndex(p => p.slug === slug);
+
+    const novaPagina = { titulo, categoria, icone, slug, conteudo };
+
+    if (index >= 0) {
+      paginas[index] = novaPagina;
+    } else {
+      paginas.push(novaPagina);
+    }
+
+    salvarPaginasStorage(paginas);
+    limparFormulario();
+    renderizarListaPaginas();
+    renderizarMenu();
+    carregarPagina(slug);
+    alert('Página salva com sucesso!');
+  }
+
+  function excluirPagina(slug) {
+    if (!confirm('Tem certeza que deseja excluir esta página?')) return;
+    let paginas = carregarPaginas().filter(p => p.slug !== slug);
+    salvarPaginasStorage(paginas);
+    renderizarListaPaginas();
+    renderizarMenu();
+    document.getElementById('view-corpo').innerHTML = '<div class="text-gray-400">Selecione uma opção no menu.</div>';
+  }
+
+  function editarPagina(slug) {
+    const paginas = carregarPaginas();
+    const pag = paginas.find(p => p.slug === slug);
+    if (!pag) return;
+
+    document.getElementById('pag-titulo').value = pag.titulo;
+    document.getElementById('pag-categoria').value = pag.categoria;
+    document.getElementById('pag-icone').value = pag.icone;
+    document.getElementById('pag-slug').value = pag.slug;
+    document.getElementById('pag-conteudo').value = pag.conteudo;
+  }
+
+  function limparFormulario() {
+    document.getElementById('pag-titulo').value = '';
+    document.getElementById('pag-icone').value = '';
+    document.getElementById('pag-slug').value = '';
+    document.getElementById('pag-conteudo').value = '';
+  }
+
+  function renderizarListaPaginas() {
+    const lista = document.getElementById('listaPaginasCadastradas');
+    if (!lista) return;
+
+    const paginas = carregarPaginas();
+    lista.innerHTML = '';
+
+    if (paginas.length === 0) {
+      lista.innerHTML = '<p class="text-xs text-gray-400 font-normal">Nenhuma página cadastrada.</p>';
+      return;
+    }
+
+    paginas.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs';
+      item.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fa-solid ${p.icone || 'fa-file'} text-gray-500"></i>
+          <span class="font-semibold text-gray-700">${p.titulo}</span>
+          <span class="text-gray-400">(${p.categoria})</span>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="editarPagina('${p.slug}')" class="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded">Editar</button>
+          <button onclick="excluirPagina('${p.slug}')" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded">Excluir</button>
+        </div>
+      `;
+      lista.appendChild(item);
+    });
+  }
+
+  // Inicialização ao carregar a página
+  document.addEventListener('DOMContentLoaded', () => {
+    renderizarMenu();
+  });
+</script>
 </body>
 </html>
