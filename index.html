@@ -144,6 +144,25 @@
   </div>
 
   <script>
+    
+    // 1. INICIALIZAÇÃO DO SUPABASE
+    const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v'; // Coloque a sua chave public/anon do Supabase
+
+    // Define o cliente globalmente para as páginas dinâmicas consultarem
+    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. CÓDIGO DA APLICAÇÃO (MANTIDO)
+    const STORAGE_KEY = 'kullka_paginas_app';
+
+    const categoriasConfig = [
+      { nome: 'Manutenção', icone: 'fa-wrench' },
+      { nome: 'Gestão Operacional', icone: 'fa-boxes-packing' },
+      { nome: 'Finanças', icone: 'fa-wallet' },
+      { nome: 'Relatórios', icone: 'fa-chart-line' }
+    ];   
+    
+    
     const STORAGE_KEY = 'kullka_paginas_app';
 
     const categoriasConfig = [
