@@ -31,14 +31,12 @@ function obterEstruturaMenu() {
   try {
     const menuSalvo = localStorage.getItem(MENU_STORAGE_KEY);
     if (!menuSalvo) {
-      localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(MENU_TEMPLATE));
       return MENU_TEMPLATE;
     }
-
     const parsed = JSON.parse(menuSalvo);
-    return Array.isArray(parsed) ? parsed : MENU_TEMPLATE;
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : MENU_TEMPLATE;
   } catch (error) {
-    console.warn('Menu inválido. Usando padrão.', error);
+    console.warn('Erro ao carregar menu. Usando padrão.', error);
     return MENU_TEMPLATE;
   }
 }
