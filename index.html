@@ -26,10 +26,17 @@
   <main id="conteudoPrincipal" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 overflow-y-auto"></main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js"></script>
-  <script src="js/layout.js"></script>
-  <script src="js/paginas.js"></script>
-  <script src="js/menu.js"></script>
-  <script src="js/main.js"></script>
+ <!-- 1. Configurações -->
+<script src="config.js"></script>
+
+<!-- 2. Telas e componentes auxiliares -->
+<script src="layout.js"></script>
+<script src="paginas.js"></script>
+
+<!-- 3. Lógica do menu (deve vir ANTES do main) -->
+<script src="menu.js"></script>
+
+<!-- 4. Inicializador principal -->
+<script src="main.js"></script>
 </body>
 </html>
