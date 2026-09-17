@@ -231,7 +231,17 @@
           panel.classList.add('opacity-0', 'pointer-events-none');
           panel.classList.remove('opacity-100', 'pointer-events-auto');
           trigger.setAttribute('aria-expanded', 'false');
-        }, 1200);
+        }, 700);
+      };
+
+      const alternar = (event) => {
+        event.preventDefault();
+        const aberto = panel.classList.contains('opacity-100');
+        if (aberto) {
+          fechar();
+        } else {
+          abrir();
+        }
       };
 
       trigger.addEventListener('mouseenter', abrir);
@@ -239,17 +249,7 @@
       trigger.addEventListener('focus', abrir);
       trigger.addEventListener('mouseleave', fechar);
       trigger.addEventListener('pointerleave', fechar);
-      trigger.addEventListener('click', (event) => {
-        event.preventDefault();
-        const aberto = panel.classList.contains('opacity-100');
-        if (aberto) {
-          panel.classList.add('opacity-0', 'pointer-events-none');
-          panel.classList.remove('opacity-100', 'pointer-events-auto');
-          trigger.setAttribute('aria-expanded', 'false');
-        } else {
-          abrir();
-        }
-      });
+      trigger.addEventListener('click', alternar);
 
       panel.addEventListener('mouseenter', () => window.clearTimeout(timerFechar));
       panel.addEventListener('pointerenter', () => window.clearTimeout(timerFechar));
