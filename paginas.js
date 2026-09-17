@@ -125,10 +125,45 @@ function carregarTelaEmBranco() {
   const main = document.getElementById('conteudoPrincipal');
   if (!main) return;
 
+  const cards = [
+    { id: 'recepcao', titulo: 'Recebimento', descricao: 'Agendamento, conferência e entrada de mercadorias.', icone: 'fa-truck-ramp-box', cor: 'emerald' },
+    { id: 'guardagem_enderecamento', titulo: 'Guardagem', descricao: 'Posicionamento e endereçamento do estoque.', icone: 'fa-warehouse', cor: 'sky' },
+    { id: 'movimentacao_estoque', titulo: 'Movimentação', descricao: 'Transferências internas e ajustes de estoque.', icone: 'fa-arrows-left-right', cor: 'violet' },
+    { id: 'separacao_preparacao', titulo: 'Separação', descricao: 'Picking, embalagem e preparação de pedidos.', icone: 'fa-list-check', cor: 'amber' },
+    { id: 'expedicao', titulo: 'Expedição', descricao: 'Carregamento, romaneio e saída da carga.', icone: 'fa-truck-fast', cor: 'rose' },
+    { id: 'inventario_acuracidade', titulo: 'Inventário', descricao: 'Contagem cíclica e ajustes de acuracidade.', icone: 'fa-clipboard-list', cor: 'slate' },
+    { id: 'painel_kpis', titulo: 'KPIs', descricao: 'Indicadores de desempenho e ocupação do armazém.', icone: 'fa-chart-line', cor: 'teal' }
+  ];
+
   main.innerHTML = `
-    <div class="flex flex-col items-center justify-center h-64 text-slate-400">
-      <i class="fa-solid fa-boxes-stacked text-5xl mb-3 text-slate-300"></i>
-      <p class="text-sm">Selecione uma opção no menu para iniciar.</p>
+    <div class="space-y-6">
+      <div class="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white shadow-lg shadow-emerald-500/20">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-100">Dashboard WMS</p>
+            <h1 class="mt-2 text-3xl font-black tracking-tight">Operação em tempo real</h1>
+          </div>
+          <div class="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm backdrop-blur-sm">
+            <div class="text-emerald-100">Status geral</div>
+            <strong class="text-lg">Armazém ativo</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        ${cards.map(({ id, titulo, descricao, icone, cor }) => `
+          <button type="button" onclick="abrirPaginaMenu('${id}')" class="group text-left rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg">
+            <div class="mb-4 flex items-center justify-between">
+              <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-${cor}-100 text-${cor}-600">
+                <i class="fa-solid ${icone} text-xl"></i>
+              </span>
+              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Abrir</span>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">${titulo}</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600">${descricao}</p>
+          </button>
+        `).join('')}
+      </div>
     </div>
   `;
 }

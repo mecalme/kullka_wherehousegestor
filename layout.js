@@ -157,19 +157,22 @@ function carregarTelaProdutos() {
   const produtos = obterProdutos();
 
   main.innerHTML = `
-    <div class="space-y-6">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+    <div class="kullka-shell">
+      <div class="kullka-panel">
+        <div class="kullka-header">
           <div>
-            <p class="text-xs uppercase tracking-[0.2em] text-emerald-600 font-semibold">Cadastro</p>
-            <h1 class="text-2xl font-bold text-slate-800">Produtos</h1>
+            <p>Cadastro</p>
+            <h1>Produtos</h1>
           </div>
-          <button type="button" onclick="mostrarFormularioProduto()" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition">
-            <i class="fa-solid fa-plus"></i> Novo Produto
-          </button>
+          <div class="kullka-actions">
+            <button type="button" onclick="mostrarFormularioProduto()" class="kullka-btn kullka-btn-primary">
+              <i class="fa-solid fa-plus"></i>
+              Novo Produto
+            </button>
+          </div>
         </div>
 
-        <div id="formProduto" class="hidden px-6 py-5 border-b border-slate-200">
+        <div id="formProduto" class="hidden kullka-form">
           <form onsubmit="salvarProdutoFormulario(); return false;">
             <input type="hidden" id="produtoId" value="" />
             ${[
@@ -178,41 +181,47 @@ function carregarTelaProdutos() {
               ['Preços e Custos', [['precoCusto', 'Preço de Custo', 'number'], ['custoAdicional', 'Custo Adicional', 'number'], ['margemLucro', 'Margem (%)', 'number'], ['preco', 'Preço de Venda', 'number'], ['precoMinimo', 'Preço Mínimo', 'number']]],
               ['Estoque e Logística', [['unidade', 'Unidade Interna', 'select'], ['fatorConversao', 'Fator Conversão', 'number'], ['estoque', 'Estoque Atual', 'number'], ['estoqueMinimo', 'Estoque Mínimo', 'number'], ['estoqueMaximo', 'Estoque Máximo', 'number'], ['pesoBruto', 'Peso Bruto (kg)', 'number'], ['pesoLiquido', 'Peso Líquido (kg)', 'number'], ['altura', 'Altura (cm)', 'number'], ['largura', 'Largura (cm)', 'number'], ['comprimento', 'Comprimento (cm)', 'number'], ['localizacao', 'Localização', 'text']]],
               ['Rastreabilidade e Lotes', [['controlaLoteValidade', 'Controla Lote/Validade', 'select'], ['numeroSerie', 'Número de Série', 'text']]]
-            ].map(([titulo, campos]) => `<section class="mb-6 rounded-xl border border-slate-200 p-4 bg-slate-50/50"><h2 class="mb-4 text-base font-bold text-slate-800">${titulo}</h2><div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">${campos.map((c) => renderizarCampoProduto(...c)).join('')}</div></section>`).join('')}
+            ].map(([titulo, campos]) => `<section class="mb-6 rounded-xl border border-slate-200 bg-slate-50/60 p-4"><h2 class="mb-4 text-base font-bold text-slate-800">${titulo}</h2><div class="kullka-grid">${campos.map((c) => renderizarCampoProduto(...c)).join('')}</div></section>`).join('')}
 
             <div class="flex justify-end gap-3 mt-5">
-              <button type="button" onclick="cancelarFormularioProduto()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-medium">Cancelar</button>
-              <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 font-medium">Salvar Produto</button>
+              <button type="button" onclick="cancelarFormularioProduto()" class="kullka-btn kullka-btn-secondary">Cancelar</button>
+              <button type="submit" class="kullka-btn kullka-btn-primary">Salvar Produto</button>
             </div>
           </form>
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-200"><h2 class="text-lg font-bold text-slate-800">Catálogo de Produtos</h2></div>
+      <div class="kullka-panel overflow-hidden">
+        <div class="kullka-header">
+          <div>
+            <h2>Catálogo de Produtos</h2>
+          </div>
+        </div>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
+          <table class="kullka-table min-w-full">
+            <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Código</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Nome</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Categoria</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Estoque</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Preço</th>
-                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">Ações</th>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Preço</th>
+                <th class="text-right">Ações</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200">
+            <tbody>
               ${produtos.length === 0 ? `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Nenhum produto cadastrado.</td></tr>` : produtos.map((p) => `
-                <tr class="hover:bg-slate-50">
-                  <td class="px-6 py-4 text-sm font-medium text-slate-900">${escaparTexto(p.codigo)}</td>
-                  <td class="px-6 py-4 text-sm text-slate-700">${escaparTexto(p.nome)}</td>
-                  <td class="px-6 py-4 text-sm text-slate-700">${escaparTexto(p.categoria)}</td>
-                  <td class="px-6 py-4 text-sm text-slate-700">${p.estoque}</td>
-                  <td class="px-6 py-4 text-sm font-semibold text-slate-900">R$ ${Number(p.preco || 0).toFixed(2)}</td>
-                  <td class="px-6 py-4 text-sm text-right">
-                    <button type="button" onclick="editarProduto('${p.id}')" class="px-2.5 py-1.5 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium mr-1">Editar</button>
-                    <button type="button" onclick="excluirProduto('${p.id}')" class="px-2.5 py-1.5 rounded-md bg-red-50 text-red-700 hover:bg-red-100 font-medium">Excluir</button>
+                <tr>
+                  <td class="font-medium text-slate-900">${escaparTexto(p.codigo)}</td>
+                  <td class="text-slate-700">${escaparTexto(p.nome)}</td>
+                  <td class="text-slate-700">${escaparTexto(p.categoria)}</td>
+                  <td class="text-slate-700">${p.estoque}</td>
+                  <td class="font-semibold text-slate-900">R$ ${Number(p.preco || 0).toFixed(2)}</td>
+                  <td class="text-right">
+                    <div class="flex justify-end gap-2">
+                      <button type="button" onclick="editarProduto('${p.id}')" class="kullka-btn kullka-btn-secondary px-3 py-2">Editar</button>
+                      <button type="button" onclick="excluirProduto('${p.id}')" class="kullka-btn kullka-btn-danger px-3 py-2">Excluir</button>
+                    </div>
                   </td>
                 </tr>
               `).join('')}

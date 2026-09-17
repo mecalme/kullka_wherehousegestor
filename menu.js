@@ -196,7 +196,14 @@
 
         return `
           <div class="relative ${nivel > 0 ? 'ml-3' : ''}">
-            <button type="button" ${itemLabel} class="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+            <button
+              type="button"
+              ${itemLabel}
+              role="menuitem"
+              tabindex="0"
+              data-menu-item
+              class="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
               <span class="flex items-center gap-2 truncate">
                 <i class="fa-solid ${item.icone || 'fa-file-lines'} text-slate-500"></i>
                 <span class="truncate">${escaparHtml(item.nome)}</span>
@@ -244,17 +251,41 @@
         }
       };
 
+      trigger.setAttribute('aria-haspopup', 'menu');
+      trigger.setAttribute('aria-controls', `menu-${Math.random().toString(36).slice(2, 8)}`);
+      panel.setAttribute('role', 'menu');
+
       trigger.addEventListener('mouseenter', abrir);
       trigger.addEventListener('pointerenter', abrir);
       trigger.addEventListener('focus', abrir);
       trigger.addEventListener('mouseleave', fechar);
       trigger.addEventListener('pointerleave', fechar);
       trigger.addEventListener('click', alternar);
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          fecharTodosMenus();
+          trigger.focus();
+          return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          abrir();
+          const primeiroItem = panel.querySelector('[data-menu-item]');
+          if (primeiroItem) primeiroItem.focus();
+        }
+      });
 
       panel.addEventListener('mouseenter', () => window.clearTimeout(timerFechar));
       panel.addEventListener('pointerenter', () => window.clearTimeout(timerFechar));
       panel.addEventListener('mouseleave', fechar);
       panel.addEventListener('pointerleave', fechar);
+      panel.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          fecharTodosMenus();
+          trigger.focus();
+        }
+      });
       grupo.addEventListener('mouseleave', fechar);
       grupo.addEventListener('pointerleave', fechar);
       grupo.addEventListener('focusout', (event) => {
@@ -302,8 +333,21 @@
     aplicarComportamentoMenu();
   }
 
+  function fecharTodosMenus() {
+    document.querySelectorAll('[data-menu-panel]').forEach((panel) => {
+      panel.classList.add('opacity-0', 'pointer-events-none');
+      panel.classList.remove('opacity-100', 'pointer-events-auto');
+    });
+
+    document.querySelectorAll('[data-menu-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+
   function abrirPaginaMenu(idPagina) {
     if (!idPagina) return;
+
+    fecharTodosMenus();
 
     if (typeof window.carregarTelaProdutos === 'function' && idPagina === 'cadastro_produtos') {
       window.carregarTelaProdutos();
