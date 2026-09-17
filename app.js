@@ -17,6 +17,11 @@ function setModo(modo) {
 }
 
 function iniciarLeitorPrincipal() {
+    if (typeof Quagga === 'undefined') {
+        console.warn('Leitor de código de barras indisponível: a biblioteca Quagga não foi carregada.');
+        return;
+    }
+
     try {
         Quagga.stop();
     } catch (e) {}
@@ -74,6 +79,11 @@ function capturarTextoCamera(tipo) {
 async function processarFotoOCR(event) {
     let arquivo = event.target.files[0];
     if (!arquivo) return;
+
+    if (typeof Tesseract === 'undefined') {
+        alert('OCR indisponível: a biblioteca Tesseract não foi carregada.');
+        return;
+    }
 
     let inputAlvoId = campoAlvoOCR === 'lote' ? 'input-lote' : 'input-validade';
     let inputElemento = document.getElementById(inputAlvoId);
