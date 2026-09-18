@@ -17,18 +17,72 @@
         itens: Array.isArray(categoria.itens) ? categoria.itens : []
       };
 
-      categoriaNormalizada.itens = categoriaNormalizada.itens.map((item, indiceItem) => ({
-        id: item.id || gerarId('item'),
-        nome: item.nome || `Item ${indiceItem + 1}`,
-        paginaId: item.paginaId || '',
-        icone: item.icone || 'fa-file-lines',
-        ativo: item.ativo !== false,
-        ordem: item.ordem || indiceItem + 1,
-        itens: Array.isArray(item.itens) ? item.itens : []
-      }));
+      categoriaNormalizada.itens = normalizarItensMenu(categoriaNormalizada.itens);
 
       return categoriaNormalizada;
     });
+  }
+
+  function normalizarItensMenu(itens, nivel = 0) {
+    return (Array.isArray(itens) ? itens : []).map((item, indiceItem) => ({
+      id: item.id || gerarId('item'),
+      nome: item.nome || `Item ${indiceItem + 1}`,
+      paginaId: item.paginaId || '',
+      icone: item.icone || 'fa-file-lines',
+      ativo: item.ativo !== false,
+      ordem: item.ordem || indiceItem + 1,
+      nivel,
+      itens: normalizarItensMenu(item.itens, nivel + 1)
+    }));
+  }
+
+  function migrarMenuProdutos(menu) {
+    const manutencao = menu.find((categoria) => categoria.id === 'cat_manutencao');
+    if (!manutencao) return false;
+
+    manutencao.itens = manutencao.itens || [];
+    let grupoProdutos = manutencao.itens.find((item) => item.id === 'man_produtos_grupo');
+    const itemCadastro = manutencao.itens.find((item) => item.id === 'man_produtos' || item.paginaId === 'cadastro_produtos');
+
+    if (!grupoProdutos) {
+      grupoProdutos = {
+        id: 'man_produtos_grupo',
+        nome: 'Produtos',
+        paginaId: '',
+        icone: 'fa-boxes-stacked',
+        ativo: true,
+        ordem: 1,
+        itens: []
+      };
+      manutencao.itens.push(grupoProdutos);
+    }
+
+    grupoProdutos.itens = grupoProdutos.itens || [];
+    if (itemCadastro && itemCadastro !== grupoProdutos) {
+      const indice = manutencao.itens.indexOf(itemCadastro);
+      manutencao.itens.splice(indice, 1);
+      itemCadastro.id = 'man_cadastro_produtos';
+      itemCadastro.nome = 'Cadastro de Produtos';
+      itemCadastro.paginaId = 'cadastro_produtos';
+      itemCadastro.ordem = 1;
+      grupoProdutos.itens.unshift(itemCadastro);
+    }
+
+    if (!grupoProdutos.itens.some((item) => item.paginaId === 'cadastro_produtos')) {
+      grupoProdutos.itens.push({
+        id: 'man_cadastro_produtos',
+        nome: 'Cadastro de Produtos',
+        paginaId: 'cadastro_produtos',
+        icone: 'fa-box-open',
+        ativo: true,
+        ordem: 1,
+        itens: []
+      });
+    }
+
+    manutencao.itens.forEach((item, indice) => { item.ordem = indice + 1; });
+    grupoProdutos.itens.forEach((item, indice) => { item.ordem = indice + 1; });
+    return true;
   }
 
   function criarMenuPadrao() {
@@ -54,7 +108,9 @@
         ativo: true,
         ordem: 2,
         itens: [
-          { id: 'man_produtos', nome: 'Produtos', paginaId: 'cadastro_produtos', icone: 'fa-boxes-stacked', ativo: true, ordem: 1 },
+          { id: 'man_produtos_grupo', nome: 'Produtos', paginaId: '', icone: 'fa-boxes-stacked', ativo: true, ordem: 1, itens: [
+            { id: 'man_cadastro_produtos', nome: 'Cadastro de Produtos', paginaId: 'cadastro_produtos', icone: 'fa-box-open', ativo: true, ordem: 1, itens: [] }
+          ] },
           { id: 'man_fator', nome: 'Fator de Conversão', paginaId: 'fator_conversao', icone: 'fa-arrows-rotate', ativo: true, ordem: 2 },
           { id: 'man_unidades', nome: 'Unidades', paginaId: 'unidades_medida', icone: 'fa-ruler-combined', ativo: true, ordem: 3 },
           { id: 'man_paginas', nome: 'Gestão de Páginas', paginaId: 'gestao_paginas', icone: 'fa-file-code', ativo: true, ordem: 4 },
@@ -70,13 +126,17 @@
     try {
       const salvo = JSON.parse(localStorage.getItem(STORAGE_MENU));
       if (Array.isArray(salvo) && salvo.length > 0) {
-        return padronizarEstruturaMenu(salvo);
+        const menuSalvo = padronizarEstruturaMenu(salvo);
+        migrarMenuProdutos(menuSalvo);
+        salvarEstruturaMenu(menuSalvo);
+        return menuSalvo;
       }
     } catch (error) {
       console.warn('Erro ao ler menu salvo:', error);
     }
 
     const padrao = criarMenuPadrao();
+    migrarMenuProdutos(padrao);
     salvarEstruturaMenu(padrao);
     return padrao;
   }
@@ -133,7 +193,27 @@
   }
 
   function obterOpcoesPaisMenu(menu, itemId) {
-    return menu.map((categoria) => ({ id: categoria.id, nome: categoria.nome }));
+    const opcoes = [];
+    const idsDescendentes = new Set();
+    const itemAtual = encontrarItemMenu(menu, itemId)?.item;
+
+    function marcarDescendentes(item) {
+      (item?.itens || []).forEach((filho) => {
+        idsDescendentes.add(filho.id);
+        marcarDescendentes(filho);
+      });
+    }
+
+    if (itemAtual) marcarDescendentes(itemAtual);
+    menu.forEach((categoria) => {
+      opcoes.push({ id: categoria.id, nome: categoria.nome });
+      percorrerItensMenu(categoria.itens, (item) => {
+        if (!itemAtual || (item.id !== itemId && !idsDescendentes.has(item.id))) {
+          opcoes.push({ id: item.id, nome: `${'  '.repeat(item.nivel || 0)}-> ${item.nome}` });
+        }
+      });
+    });
+    return opcoes;
   }
 
   function removerItemMenuDaEstrutura(menu, itemId) {

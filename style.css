@@ -15,6 +15,7 @@ body {
 .kullka-topbar {
   position: sticky;
   top: 0;
+  z-index: 100;
   border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 }
 
@@ -63,6 +64,7 @@ body {
 }
 
 #mainNav [data-menu-panel] {
+  z-index: 1000;
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
 }
 
