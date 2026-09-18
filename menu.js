@@ -272,7 +272,9 @@
       .map((item) => {
         const filhos = renderizarSubmenuItens(item.itens || [], nivel + 1);
         const temFilhos = Array.isArray(item.itens) && item.itens.length > 0;
-        const itemLabel = item.paginaId ? `onclick="abrirPaginaMenu('${item.paginaId}')"` : 'onclick="return false;"';
+        const itemLabel = temFilhos
+          ? 'onclick="alternarSubmenuMenu(this)" aria-expanded="false"'
+          : item.paginaId ? `onclick="abrirPaginaMenu('${item.paginaId}')"` : 'onclick="return false;"';
 
         return `
           <div class="relative ${nivel > 0 ? 'ml-3' : ''}">
@@ -282,6 +284,7 @@
               role="menuitem"
               tabindex="0"
               data-menu-item
+              ${temFilhos ? 'data-submenu-trigger' : ''}
               class="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
             >
               <span class="flex items-center gap-2 truncate">
@@ -290,11 +293,20 @@
               </span>
               ${temFilhos ? '<i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>' : ''}
             </button>
-            ${filhos ? `<div class="mt-1 space-y-1 border-l border-slate-200 pl-2">${filhos}</div>` : ''}
+            ${filhos ? `<div data-submenu-panel class="mt-1 hidden space-y-1 border-l border-slate-200 pl-2">${filhos}</div>` : ''}
           </div>
         `;
       })
       .join('');
+  }
+
+  function alternarSubmenuMenu(trigger) {
+    const painel = trigger?.parentElement?.querySelector(':scope > [data-submenu-panel]');
+    if (!painel) return;
+
+    const aberto = !painel.classList.contains('hidden');
+    painel.classList.toggle('hidden', aberto);
+    trigger.setAttribute('aria-expanded', String(!aberto));
   }
 
   function aplicarComportamentoMenu() {
@@ -472,5 +484,6 @@
   window.obterColecaoFilhosMenu = obterColecaoFilhosMenu;
   window.percorrerItensMenu = percorrerItensMenu;
   window.renderizarMenu = renderizarMenu;
+  window.alternarSubmenuMenu = alternarSubmenuMenu;
   window.abrirPaginaMenu = abrirPaginaMenu;
 })();
