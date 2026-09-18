@@ -114,6 +114,14 @@ function sincronizarPaginas() {
         paginasDinamicas.push({ id, nome, menuId, submenuPaiId, icone, sistema: true, podeExcluir: false });
       }
     });
+    const menuAtual = obterEstruturaMenu();
+    paginasDinamicas.forEach((pagina) => {
+      const caminho = localizarPaginaNoMenu(menuAtual, obterPaginaId(pagina));
+      if (caminho) {
+        pagina.menuId = caminho.menuId;
+        pagina.submenuPaiId = caminho.paiId || '';
+      }
+    });
     localStorage.setItem('kullka_paginas', JSON.stringify(paginasDinamicas));
   } catch (error) {
     console.warn('Erro ao sincronizar páginas:', error);
@@ -836,7 +844,8 @@ function atualizarSubmenusPagina(valorSelecionado = '') {
   submenuSelect.innerHTML = '<option value="">Diretamente no menu principal</option>';
   percorrerItensMenu(categoria?.itens, (item) => {
     if (!item.paginaId && item.id !== document.getElementById('paginaIdOriginal')?.value) {
-      submenuSelect.insertAdjacentHTML('beforeend', `<option value="${item.id}">${escaparHtml(item.nome)}</option>`);
+      const prefixo = '  '.repeat(item.nivel || 0);
+      submenuSelect.insertAdjacentHTML('beforeend', `<option value="${item.id}">${escaparHtml(prefixo + '-> ' + item.nome)}</option>`);
     }
   });
   submenuSelect.value = valorSelecionado;
@@ -852,16 +861,19 @@ function sincronizarPaginaComMenu(pagina, idAnterior = '') {
   const menu = obterEstruturaMenu();
   let itemExistente = null;
 
-  menu.forEach((categoria) => {
-    categoria.itens = categoria.itens || [];
-    for (let index = categoria.itens.length - 1; index >= 0; index -= 1) {
-      const item = categoria.itens[index];
+  function removerVinculos(itens) {
+    for (let index = (itens || []).length - 1; index >= 0; index -= 1) {
+      const item = itens[index];
       if (item.paginaId === idAnterior || item.paginaId === pagina.id) {
         if (!itemExistente) itemExistente = item;
-        categoria.itens.splice(index, 1);
+        itens.splice(index, 1);
+      } else {
+        removerVinculos(item.itens);
       }
     }
-  });
+  }
+
+  menu.forEach((categoria) => removerVinculos(categoria.itens));
 
   const categoria = menu.find((item) => item.id === pagina.menuId);
   if (!categoria) return;
@@ -986,4 +998,20 @@ function escaparHtml(valor) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function localizarPaginaNoMenu(menu, paginaId) {
+  for (const categoria of menu || []) {
+    const procurar = (itens, paiId = '') => {
+      for (const item of itens || []) {
+        if (item.paginaId === paginaId) return { menuId: categoria.id, paiId };
+        const encontrado = procurar(item.itens, item.id);
+        if (encontrado) return encontrado;
+      }
+      return null;
+    };
+    const encontrado = procurar(categoria.itens);
+    if (encontrado) return encontrado;
+  }
+  return null;
 }
