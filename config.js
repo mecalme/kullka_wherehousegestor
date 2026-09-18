@@ -1,6 +1,6 @@
 // Configuração Segura do Supabase
 const SUPABASE_URL = 'https://wyqdacpheshiqtvdwdke.supabase.co';
-const SUPABASE_KEY = 'SUA_CHAVE_PUBLICA_ANON_AQUI'; // Utilize APENAS a chave pública/anon
+const SUPABASE_KEY = 'sb_publishable_sAI3Y4Aszx_ho4Z_ZSM_WQ_TAMDIe9v'; // Chave pública; nunca use service_role no frontend.
 
 const supabaseClient = (() => {
   if (typeof window === 'undefined' || !window.supabase) {
@@ -8,7 +8,7 @@ const supabaseClient = (() => {
     return null;
   }
 
-  if (!SUPABASE_URL || SUPABASE_URL.includes('...') || !SUPABASE_KEY || SUPABASE_KEY.includes('...')) {
+  if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_KEY.includes('...') || SUPABASE_KEY.includes('SUA_CHAVE')) {
     console.warn('Supabase não configurado: Insira as credenciais válidas em config.js.');
     return null;
   }

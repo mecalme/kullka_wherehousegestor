@@ -1,29 +1,25 @@
-// -------------------------------------------------------------
-// TELA DE CADASTRO DE PRODUTOS E LAYOUT LOGÍSTICO (REFATORADO)
-// -------------------------------------------------------------
+// Cadastro de produtos conectado à tabela produtos da Supabase.
 
-const PRODUTOS_KEY = 'kullka_produtos';
-const LAYOUT_KEY = 'kullka_layout_logistico';
-const LAYOUT_OPCOES_KEY = 'kullka_layout_opcoes';
+const PRODUTOS_TABELA = 'produtos';
+let produtosEmMemoria = [];
+let filtroProdutos = { busca: '', categoria: '' };
+let colunasProdutos = {
+  sku: 'sku',
+  ean13: 'ean13',
+  descricao: 'descricao',
+  marca: 'marca',
+  unidade_medida: 'unidade_medida',
+  categoria: 'categoria'
+};
 
-const PRODUTO_CAMPOS = [
-  ['codigo', 'Código / SKU', 'text'], ['gtin', 'GTIN / EAN', 'text'], ['nome', 'Nome / Descrição principal', 'text'],
-  ['descricaoCurta', 'Descrição reduzida / curta', 'text'], ['categoria', 'Categoria', 'text'], ['subcategoria', 'Subcategoria', 'text'],
-  ['marca', 'Marca / Fabricante', 'text'], ['status', 'Status', 'select'], ['ncm', 'NCM', 'text'], ['cest', 'CEST', 'text'],
-  ['cfop', 'CFOP', 'text'], ['origemMercadoria', 'Origem da mercadoria', 'select'], ['regimeTributario', 'Regime tributário', 'select'],
-  ['csosn', 'CSOSN', 'text'], ['cst', 'CST', 'text'], ['pisCofinsCst', 'CST PIS / COFINS', 'text'], ['pisCofinsAliquota', 'Alíquota PIS / COFINS (%)', 'number'],
-  ['ipiCst', 'CST IPI', 'text'], ['ipiAliquota', 'Alíquota IPI (%)', 'number'], ['unidadeFiscal', 'Unidade comercializada na NF-e', 'text'],
-  ['precoCusto', 'Preço de custo', 'number'], ['custoAdicional', 'Custo adicional / frete rateado', 'number'], ['margemLucro', 'Margem de lucro (%)', 'number'],
-  ['preco', 'Preço de venda', 'number'], ['precoMinimo', 'Preço mínimo / atacado', 'number'], ['unidade', 'Unidade de medida interna', 'select'],
-  ['fatorConversao', 'Fator de conversão', 'number'], ['estoque', 'Estoque atual', 'number'], ['estoqueMinimo', 'Estoque mínimo / ponto de pedido', 'number'],
-  ['estoqueMaximo', 'Estoque máximo', 'number'], ['pesoBruto', 'Peso bruto (kg)', 'number'], ['pesoLiquido', 'Peso líquido (kg)', 'number'],
-  ['altura', 'Altura (cm)', 'number'], ['largura', 'Largura (cm)', 'number'], ['comprimento', 'Comprimento (cm)', 'number'],
-  ['localizacao', 'Localização logística', 'text'], ['controlaLoteValidade', 'Controla lote e validade', 'select'], ['numeroSerie', 'Número de série', 'text']
-];
-
-function valorProduto(produto, campo, padrao = '') {
-  return produto && produto[campo] !== undefined && produto[campo] !== null ? produto[campo] : padrao;
-}
+const COLUNAS_ORIGINAIS_PRODUTOS = {
+  sku: 'SKU',
+  ean13: 'EAN-13',
+  descricao: 'Descrição',
+  marca: 'Marca',
+  unidade_medida: 'Unidade de Medida (UM)',
+  categoria: 'Categoria'
+};
 
 function escaparTexto(valor) {
   return String(valor ?? '')
@@ -34,37 +30,78 @@ function escaparTexto(valor) {
     .replace(/'/g, '&#039;');
 }
 
-function opcoesProduto(campo) {
-  const opcoes = {
-    status: [['ativo', 'Ativo'], ['inativo', 'Inativo'], ['descontinuado', 'Descontinuado']],
-    origemMercadoria: [['0', '0 - Nacional'], ['1', '1 - Estrangeira: importação direta'], ['2', '2 - Estrangeira: mercado interno']],
-    regimeTributario: [['simples_nacional', 'Simples Nacional'], ['normal', 'Normal']],
-    unidade: [['un', 'UN - Unidade'], ['cx', 'CX - Caixa'], ['kg', 'KG - Quilograma'], ['lt', 'LT - Litro'], ['pc', 'PC - Peça'], ['m2', 'M2 - Metro quadrado']],
-    controlaLoteValidade: [['nao', 'Não'], ['sim', 'Sim']]
-  };
-  return opcoes[campo] || [];
+function clienteProdutosDisponivel() {
+  return typeof supabaseClient !== 'undefined' && supabaseClient;
 }
 
-function obterProdutos() {
-  try {
-    const dados = JSON.parse(localStorage.getItem(PRODUTOS_KEY));
-    if (Array.isArray(dados) && dados.length > 0) return dados;
-  } catch (error) {
-    console.warn('Erro ao ler produtos do localStorage:', error);
+function mensagemErroSupabase(error) {
+  if (!error) return 'Não foi possível concluir a operação.';
+  if (error.code === '42501' || error.code === 'PGRST301') return 'A operação foi bloqueada pelas políticas RLS da Supabase.';
+  if (error.code === '23505') return 'Já existe um produto com este EAN-13.';
+  return error.message || 'Não foi possível concluir a operação.';
+}
+
+function validarProduto(dados) {
+  if (!dados.sku || !dados.ean13 || !dados.descricao) return 'Preencha SKU, EAN-13 e descrição.';
+  if (!/^\d{13}$/.test(dados.ean13)) return 'O EAN-13 deve conter exatamente 13 dígitos.';
+  return '';
+}
+
+async function obterProdutos() {
+  if (!clienteProdutosDisponivel()) throw new Error('Supabase não está configurado. Verifique config.js.');
+
+  const { data, error } = await supabaseClient
+    .from(PRODUTOS_TABELA)
+    .select('*');
+
+  if (error) throw error;
+  if (Array.isArray(data) && data.length > 0) {
+    const camposDisponiveis = Object.keys(data[0]);
+    const encontrouNormalizadas = Object.values(colunasProdutos).every((campo) => camposDisponiveis.includes(campo));
+    colunasProdutos = encontrouNormalizadas ? colunasProdutos : COLUNAS_ORIGINAIS_PRODUTOS;
   }
-
-  return [
-    { id: '1', codigo: 'PROD-001', nome: 'Caixa de Papelão M', categoria: 'Embalagens', estoque: 150, preco: 15.90, unidade: 'un' },
-    { id: '2', codigo: 'PROD-002', nome: 'Fita Adesiva Larga', categoria: 'Suprimentos', estoque: 80, preco: 9.50, unidade: 'un' }
-  ];
+  return (Array.isArray(data) ? data : []).map((produto) => ({
+    sku: produto[colunasProdutos.sku],
+    ean13: produto[colunasProdutos.ean13],
+    descricao: produto[colunasProdutos.descricao],
+    marca: produto[colunasProdutos.marca],
+    unidade_medida: produto[colunasProdutos.unidade_medida],
+    categoria: produto[colunasProdutos.categoria]
+  })).sort((a, b) => String(a.descricao ?? '').localeCompare(String(b.descricao ?? ''), 'pt-BR'));
 }
 
-function salvarProdutos(produtos) {
-  localStorage.setItem(PRODUTOS_KEY, JSON.stringify(produtos));
+function payloadProduto(produto) {
+  return {
+    [colunasProdutos.sku]: Number(produto.sku),
+    [colunasProdutos.ean13]: Number(produto.ean13),
+    [colunasProdutos.descricao]: produto.descricao,
+    [colunasProdutos.marca]: produto.marca || null,
+    [colunasProdutos.unidade_medida]: produto.unidade_medida || null,
+    [colunasProdutos.categoria]: produto.categoria || null
+  };
 }
 
-function gerarNovoId() {
-  return `id_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+function erroColunaInexistente(error) {
+  return error?.code === '42703' || /column .* does not exist/i.test(error?.message || '');
+}
+
+function valoresProdutosFiltrados() {
+  const busca = filtroProdutos.busca.trim().toLowerCase();
+  return produtosEmMemoria.filter((produto) => {
+    const correspondeBusca = !busca || [produto.sku, produto.ean13, produto.descricao, produto.marca]
+      .some((valor) => String(valor ?? '').toLowerCase().includes(busca));
+    const correspondeCategoria = !filtroProdutos.categoria || produto.categoria === filtroProdutos.categoria;
+    return correspondeBusca && correspondeCategoria;
+  });
+}
+
+function categoriasProdutos() {
+  return [...new Set(produtosEmMemoria.map((produto) => produto.categoria).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'));
+}
+
+function valorProduto(produto, campo) {
+  return produto?.[campo] ?? '';
 }
 
 function mostrarFormularioProduto(produto = null) {
@@ -72,162 +109,171 @@ function mostrarFormularioProduto(produto = null) {
   if (!form) return;
 
   form.classList.remove('hidden');
-  document.getElementById('produtoId').value = produto?.id || '';
-
-  PRODUTO_CAMPOS.forEach(([campo]) => {
-    const elemento = document.getElementById(`produto${campo.charAt(0).toUpperCase()}${campo.slice(1)}`);
-    if (elemento) {
-      elemento.value = valorProduto(produto, campo, campo === 'status' ? 'ativo' : campo === 'unidade' ? 'un' : campo === 'controlaLoteValidade' ? 'nao' : '');
-    }
+  document.getElementById('produtoEanOriginal').value = valorProduto(produto, 'ean13');
+  ['sku', 'ean13', 'descricao', 'marca', 'unidade_medida', 'categoria'].forEach((campo) => {
+    const elemento = document.getElementById(`produto_${campo}`);
+    if (elemento) elemento.value = valorProduto(produto, campo);
   });
+  document.getElementById('produto_sku')?.focus();
 }
 
 function cancelarFormularioProduto() {
-  const form = document.getElementById('formProduto');
-  if (form) form.classList.add('hidden');
-  document.getElementById('produtoId').value = '';
+  document.getElementById('formProduto')?.classList.add('hidden');
+  document.getElementById('formProdutoDados')?.reset();
+  const original = document.getElementById('produtoEanOriginal');
+  if (original) original.value = '';
 }
 
-function salvarProdutoFormulario() {
-  const produtoId = document.getElementById('produtoId')?.value || '';
-  const dados = {};
+function lerProdutoFormulario() {
+  const valor = (campo) => document.getElementById(`produto_${campo}`)?.value.trim() || '';
+  return {
+    sku: valor('sku'),
+    ean13: valor('ean13'),
+    descricao: valor('descricao'),
+    marca: valor('marca'),
+    unidade_medida: valor('unidade_medida'),
+    categoria: valor('categoria')
+  };
+}
 
-  PRODUTO_CAMPOS.forEach(([campo, , tipo]) => {
-    const valor = document.getElementById(`produto${campo.charAt(0).toUpperCase()}${campo.slice(1)}`)?.value || '';
-    dados[campo] = tipo === 'number' ? Number(valor || 0) : valor.trim();
-  });
-
-  if (!dados.codigo || !dados.nome || !dados.categoria) {
-    alert('Preencha os campos obrigatórios: Código, Nome e Categoria.');
+async function salvarProdutoFormulario() {
+  const produto = lerProdutoFormulario();
+  const erroValidacao = validarProduto(produto);
+  if (erroValidacao) {
+    alert(erroValidacao);
     return;
   }
 
-  const produtos = obterProdutos();
-  const id = produtoId || gerarNovoId();
-  const index = produtos.findIndex((p) => String(p.id) === String(id));
-
-  const produtoAtualizado = { ...(index >= 0 ? produtos[index] : {}), id, ...dados };
-
-  if (index >= 0) {
-    produtos[index] = produtoAtualizado;
-  } else {
-    produtos.push(produtoAtualizado);
+  const eanOriginal = document.getElementById('produtoEanOriginal')?.value || '';
+  const botao = document.querySelector('#formProdutoDados button[type="submit"]');
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = 'Salvando...';
   }
 
-  salvarProdutos(produtos);
-  carregarTelaProdutos();
-}
-
-function editarProduto(idProduto) {
-  const produtos = obterProdutos();
-  const produto = produtos.find((p) => String(p.id) === String(idProduto));
-  if (!produto) return;
-  mostrarFormularioProduto(produto);
-}
-
-function excluirProduto(idProduto) {
-  if (!confirm('Deseja realmente excluir este produto?')) return;
-  const produtos = obterProdutos().filter((p) => String(p.id) !== String(idProduto));
-  salvarProdutos(produtos);
-  carregarTelaProdutos();
-}
-
-function renderizarCampoProduto(campo, nome, tipo = 'text') {
-  const id = `produto${campo.charAt(0).toUpperCase()}${campo.slice(1)}`;
-  if (tipo === 'select') {
-    return `
-      <label class="block">
-        <span class="text-sm font-medium text-slate-700">${nome}</span>
-        <select id="${id}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
-          ${opcoesProduto(campo).map(([valor, texto]) => `<option value="${valor}">${texto}</option>`).join('')}
-        </select>
-      </label>`;
+  try {
+    let dados = payloadProduto(produto);
+    const executar = () => eanOriginal
+      ? supabaseClient.from(PRODUTOS_TABELA).update(dados).eq(colunasProdutos.ean13, Number(eanOriginal))
+      : supabaseClient.from(PRODUTOS_TABELA).insert(dados);
+    let { error } = await executar();
+    if (error && erroColunaInexistente(error) && colunasProdutos.sku === 'sku') {
+      colunasProdutos = COLUNAS_ORIGINAIS_PRODUTOS;
+      dados = payloadProduto(produto);
+      ({ error } = await executar());
+    }
+    if (error) throw error;
+    cancelarFormularioProduto();
+    await carregarTelaProdutos();
+  } catch (error) {
+    alert(mensagemErroSupabase(error));
+  } finally {
+    if (botao) {
+      botao.disabled = false;
+      botao.textContent = 'Salvar produto';
+    }
   }
+}
+
+function editarProduto(ean13) {
+  const produto = produtosEmMemoria.find((item) => String(item.ean13) === String(ean13));
+  if (produto) mostrarFormularioProduto(produto);
+}
+
+async function excluirProduto(ean13) {
+  if (!confirm(`Deseja excluir o produto EAN-13 ${ean13}?`)) return;
+
+  try {
+    const { error } = await supabaseClient.from(PRODUTOS_TABELA).delete().eq(colunasProdutos.ean13, Number(ean13));
+    if (error) throw error;
+    await carregarTelaProdutos();
+  } catch (error) {
+    alert(mensagemErroSupabase(error));
+  }
+}
+
+function renderizarCampoProduto(campo, nome, tipo = 'text', obrigatorio = false) {
+  const id = `produto_${campo}`;
+  const atributos = campo === 'ean13' ? 'inputmode="numeric" maxlength="13" pattern="[0-9]{13}"' : '';
   return `
-    <label class="block">
-      <span class="text-sm font-medium text-slate-700">${nome}</span>
-      <input id="${id}" type="${tipo}" ${tipo === 'number' ? 'min="0" step="0.01"' : ''} class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500" />
+    <label class="kullka-field">
+      <span>${nome}${obrigatorio ? ' *' : ''}</span>
+      <input id="${id}" type="${tipo}" ${atributos} ${obrigatorio ? 'required' : ''} />
     </label>`;
 }
 
-function carregarTelaProdutos() {
+function renderizarTabelaProdutos() {
+  const tabela = document.getElementById('tabelaProdutos');
+  const contador = document.getElementById('contadorProdutos');
+  if (!tabela) return;
+
+  const produtos = valoresProdutosFiltrados();
+  if (contador) contador.textContent = `${produtos.length} produto(s)`;
+  tabela.innerHTML = produtos.length === 0
+    ? '<tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Nenhum produto encontrado.</td></tr>'
+    : produtos.map((produto) => `
+      <tr>
+        <td class="font-medium text-slate-900">${escaparTexto(produto.sku)}</td>
+        <td class="font-mono text-sm text-slate-700">${escaparTexto(produto.ean13)}</td>
+        <td class="text-slate-700">${escaparTexto(produto.descricao)}</td>
+        <td class="text-slate-700">${escaparTexto(produto.marca)}</td>
+        <td class="text-slate-700">${escaparTexto(produto.unidade_medida)}</td>
+        <td class="text-slate-700">${escaparTexto(produto.categoria)}</td>
+        <td class="text-right"><div class="flex justify-end gap-2">
+          <button type="button" onclick="editarProduto('${escaparTexto(produto.ean13)}')" class="kullka-btn kullka-btn-secondary px-3 py-2">Editar</button>
+          <button type="button" onclick="excluirProduto('${escaparTexto(produto.ean13)}')" class="kullka-btn kullka-btn-danger px-3 py-2">Excluir</button>
+        </div></td>
+      </tr>
+    `).join('');
+}
+
+function aplicarFiltrosProdutos() {
+  filtroProdutos.busca = document.getElementById('filtroProdutosBusca')?.value || '';
+  filtroProdutos.categoria = document.getElementById('filtroProdutosCategoria')?.value || '';
+  renderizarTabelaProdutos();
+}
+
+async function carregarTelaProdutos() {
   const main = document.getElementById('conteudoPrincipal');
   if (!main) return;
 
-  const produtos = obterProdutos();
+  main.innerHTML = '<div class="kullka-panel p-6 text-slate-600">Carregando produtos...</div>';
+  try {
+    produtosEmMemoria = await obterProdutos();
+  } catch (error) {
+    main.innerHTML = `<div class="kullka-panel p-6"><h1 class="text-xl font-bold text-slate-900">Não foi possível carregar produtos</h1><p class="mt-2 text-slate-600">${escaparTexto(mensagemErroSupabase(error))}</p></div>`;
+    return;
+  }
 
+  const categorias = categoriasProdutos();
   main.innerHTML = `
     <div class="kullka-shell">
       <div class="kullka-panel">
-        <div class="kullka-header">
-          <div>
-            <p>Cadastro</p>
-            <h1>Produtos</h1>
+        <div class="kullka-header"><div><p>Cadastro conectado à Supabase</p><h1>Produtos</h1></div><div class="kullka-actions">
+          <button type="button" onclick="mostrarFormularioProduto()" class="kullka-btn kullka-btn-primary"><i class="fa-solid fa-plus"></i>Novo produto</button>
+        </div></div>
+        <div class="kullka-form border-b border-slate-200"><div class="kullka-grid">
+          <label class="kullka-field md:col-span-2"><span>Pesquisar</span><input id="filtroProdutosBusca" type="search" placeholder="SKU, EAN-13, descrição ou marca" oninput="aplicarFiltrosProdutos()" /></label>
+          <label class="kullka-field"><span>Categoria</span><select id="filtroProdutosCategoria"><option value="">Todas as categorias</option>${categorias.map((categoria) => `<option value="${escaparTexto(categoria)}">${escaparTexto(categoria)}</option>`).join('')}</select></label>
+        </div></div>
+        <div id="formProduto" class="hidden kullka-form bg-slate-50/60"><form id="formProdutoDados" onsubmit="salvarProdutoFormulario(); return false;">
+          <input type="hidden" id="produtoEanOriginal" /><div class="kullka-grid">
+            ${renderizarCampoProduto('sku', 'SKU interno', 'number', true)}
+            ${renderizarCampoProduto('ean13', 'EAN-13', 'text', true)}
+            ${renderizarCampoProduto('descricao', 'Descrição', 'text', true)}
+            ${renderizarCampoProduto('marca', 'Marca')}
+            ${renderizarCampoProduto('unidade_medida', 'Unidade de medida')}
+            ${renderizarCampoProduto('categoria', 'Categoria')}
+          </div><div class="kullka-actions mt-5">
+            <button type="button" onclick="cancelarFormularioProduto()" class="kullka-btn kullka-btn-secondary">Cancelar</button>
+            <button type="submit" class="kullka-btn kullka-btn-primary">Salvar produto</button>
           </div>
-          <div class="kullka-actions">
-            <button type="button" onclick="mostrarFormularioProduto()" class="kullka-btn kullka-btn-primary">
-              <i class="fa-solid fa-plus"></i>
-              Novo Produto
-            </button>
-          </div>
-        </div>
-
-        <div id="formProduto" class="hidden kullka-form">
-          <form onsubmit="salvarProdutoFormulario(); return false;">
-            <input type="hidden" id="produtoId" value="" />
-            ${[
-              ['Informações Básicas e Identificação', [['codigo', 'Código / SKU', 'text'], ['gtin', 'GTIN / EAN', 'text'], ['nome', 'Nome / Descrição Principal', 'text'], ['descricaoCurta', 'Descrição Curta', 'text'], ['categoria', 'Categoria', 'text'], ['subcategoria', 'Subcategoria', 'text'], ['marca', 'Marca', 'text'], ['status', 'Status', 'select']]],
-              ['Dados Fiscais e Tributários', [['ncm', 'NCM', 'text'], ['cest', 'CEST', 'text'], ['cfop', 'CFOP', 'text'], ['origemMercadoria', 'Origem', 'select'], ['regimeTributario', 'Regime Tributário', 'select'], ['csosn', 'CSOSN', 'text'], ['cst', 'CST', 'text'], ['pisCofinsCst', 'CST PIS/COFINS', 'text'], ['pisCofinsAliquota', 'Alíquota PIS/COFINS (%)', 'number'], ['ipiCst', 'CST IPI', 'text'], ['ipiAliquota', 'Alíquota IPI (%)', 'number'], ['unidadeFiscal', 'Unidade Fiscal NF-e', 'text']]],
-              ['Preços e Custos', [['precoCusto', 'Preço de Custo', 'number'], ['custoAdicional', 'Custo Adicional', 'number'], ['margemLucro', 'Margem (%)', 'number'], ['preco', 'Preço de Venda', 'number'], ['precoMinimo', 'Preço Mínimo', 'number']]],
-              ['Estoque e Logística', [['unidade', 'Unidade Interna', 'select'], ['fatorConversao', 'Fator Conversão', 'number'], ['estoque', 'Estoque Atual', 'number'], ['estoqueMinimo', 'Estoque Mínimo', 'number'], ['estoqueMaximo', 'Estoque Máximo', 'number'], ['pesoBruto', 'Peso Bruto (kg)', 'number'], ['pesoLiquido', 'Peso Líquido (kg)', 'number'], ['altura', 'Altura (cm)', 'number'], ['largura', 'Largura (cm)', 'number'], ['comprimento', 'Comprimento (cm)', 'number'], ['localizacao', 'Localização', 'text']]],
-              ['Rastreabilidade e Lotes', [['controlaLoteValidade', 'Controla Lote/Validade', 'select'], ['numeroSerie', 'Número de Série', 'text']]]
-            ].map(([titulo, campos]) => `<section class="mb-6 rounded-xl border border-slate-200 bg-slate-50/60 p-4"><h2 class="mb-4 text-base font-bold text-slate-800">${titulo}</h2><div class="kullka-grid">${campos.map((c) => renderizarCampoProduto(...c)).join('')}</div></section>`).join('')}
-
-            <div class="flex justify-end gap-3 mt-5">
-              <button type="button" onclick="cancelarFormularioProduto()" class="kullka-btn kullka-btn-secondary">Cancelar</button>
-              <button type="submit" class="kullka-btn kullka-btn-primary">Salvar Produto</button>
-            </div>
-          </form>
-        </div>
+        </form></div>
       </div>
-
-      <div class="kullka-panel overflow-hidden">
-        <div class="kullka-header">
-          <div>
-            <h2>Catálogo de Produtos</h2>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="kullka-table min-w-full">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th>Estoque</th>
-                <th>Preço</th>
-                <th class="text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${produtos.length === 0 ? `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Nenhum produto cadastrado.</td></tr>` : produtos.map((p) => `
-                <tr>
-                  <td class="font-medium text-slate-900">${escaparTexto(p.codigo)}</td>
-                  <td class="text-slate-700">${escaparTexto(p.nome)}</td>
-                  <td class="text-slate-700">${escaparTexto(p.categoria)}</td>
-                  <td class="text-slate-700">${p.estoque}</td>
-                  <td class="font-semibold text-slate-900">R$ ${Number(p.preco || 0).toFixed(2)}</td>
-                  <td class="text-right">
-                    <div class="flex justify-end gap-2">
-                      <button type="button" onclick="editarProduto('${p.id}')" class="kullka-btn kullka-btn-secondary px-3 py-2">Editar</button>
-                      <button type="button" onclick="excluirProduto('${p.id}')" class="kullka-btn kullka-btn-danger px-3 py-2">Excluir</button>
-                    </div>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+      <div class="kullka-panel overflow-hidden"><div class="kullka-header"><div><h2>Catálogo de produtos</h2><p id="contadorProdutos"></p></div></div>
+        <div class="overflow-x-auto"><table class="kullka-table min-w-full"><thead><tr><th>SKU</th><th>EAN-13</th><th>Descrição</th><th>Marca</th><th>UM</th><th>Categoria</th><th class="text-right">Ações</th></tr></thead><tbody id="tabelaProdutos"></tbody></table></div>
       </div>
     </div>`;
+  document.getElementById('filtroProdutosCategoria')?.addEventListener('change', aplicarFiltrosProdutos);
+  renderizarTabelaProdutos();
 }

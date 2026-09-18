@@ -228,6 +228,15 @@
 
       const abrir = () => {
         window.clearTimeout(timerFechar);
+        document.querySelectorAll('[data-menu-panel]').forEach((outroPainel) => {
+          if (outroPainel !== panel) {
+            outroPainel.classList.add('opacity-0', 'pointer-events-none');
+            outroPainel.classList.remove('opacity-100', 'pointer-events-auto');
+          }
+        });
+        document.querySelectorAll('[data-menu-trigger]').forEach((outroTrigger) => {
+          if (outroTrigger !== trigger) outroTrigger.setAttribute('aria-expanded', 'false');
+        });
         panel.classList.remove('opacity-0', 'pointer-events-none');
         panel.classList.add('opacity-100', 'pointer-events-auto');
         trigger.setAttribute('aria-expanded', 'true');
